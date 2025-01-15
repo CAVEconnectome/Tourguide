@@ -2,20 +2,31 @@
 requires = ["hatchling>=1.26.1"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/foo"]
+
 [project]
-name = "guidebookv2"
-version = "0.0.1"
-description = "Generate states based on neuron topology etc"
+name = "guidebook"
+version = "2.0.0"
+description = "Generate states based on neuron topology"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
+    "cachetools>=5.5.0",
     "caveclient>=7.4.3",
+    "cryptography>=44.0.0",
+    "dash-bootstrap-components>=1.6.0",
     "flask>=3.1.0",
     "meshparty>=1.18.0",
+    "middle-auth-client>=3.18.1",
     "nglui>=3.7.2",
+    "numpy>=2.0.2",
+    "orjson>=3.10.14",
+    "pandas>=2.2.3",
+    "pcg-skel>=1.2.1",
 ]
 authors = [
-    { name = "Casey Schneider-Mizell", email = "caseysm@gmail.com" },
+    { name = "Casey Schneider-Mizell", email = "caseys@alleninstitute.org" },
 ]
 
 classifiers = [
@@ -61,7 +72,7 @@ pre_commit_hooks = ['uv sync', 'git add uv.lock']
 post_commit_hooks = ["./.bmv-post-commit.sh"]
 
 [[tool.bumpversion.files]]
-filename = "src/guidebookv2/__init__.py"
+filename = "src//__init__.py"
 
 [[tool.bumpversion.files]]
 filename = "pyproject.toml"
@@ -81,7 +92,7 @@ cmd = "uv run bump-my-version bump"
 help = "Bump the version number in the project. Use with 'patch', 'minor', or 'major' to specify the version change."
 
 [tool.poe.tasks.test]
-cmd = "uv run pytest --cov=guidebookv2 tests"
+cmd = "uv run pytest --cov=guidebook tests"
 help = "Run pytest with code coverage."
 
 [tool.poe.tasks.doc-preview]
