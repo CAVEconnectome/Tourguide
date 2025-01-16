@@ -47,8 +47,15 @@ def repopulate_list(col, df):
     df[col] = df[col].apply(lambda x: [float(y) for y in x.split(",")]).astype(object)
 
 
-def rehydrate_dataframe(rows, columns=[]):
+def stash_dataframe(df, int64_cols, list_cols):
+    df = stringify_int64s(df, int64_cols)
+    for col in list_cols:
+        stringify_list(col, df)
+    return df.to_dict("records")
+
+
+def rehydrate_dataframe(rows, list_columns=[]):
     df = pd.DataFrame(rows)
-    for col in columns:
+    for col in list_columns:
         repopulate_list(col, df)
     return df

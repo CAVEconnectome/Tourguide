@@ -1,9 +1,11 @@
-from pcg_skel import get_meshwork_from_client
+import numpy as np
 from meshparty import meshwork, skeleton
-from scipy import sparse
 from ..guidebook_app.utils import make_client
 from typing import Optional
 import pandas as pd
+
+VERTEX_POINT = "pt"
+VERTEX_COLUMNS = [f"{VERTEX_POINT}_{suf}" for suf in ["x", "y", "z"]]
 
 
 def process_meshwork_to_dataframe(
@@ -18,9 +20,9 @@ def process_meshwork_to_dataframe(
 
     vert_df = pd.DataFrame(
         {
-            "x": verts[:, 0],
-            "y": verts[:, 1],
-            "z": verts[:, 2],
+            VERTEX_COLUMNS[0]: verts[:, 0],
+            VERTEX_COLUMNS[1]: verts[:, 1],
+            VERTEX_COLUMNS[2]: verts[:, 2],
             "is_axon": is_axon,
             "parent": nrn.skeleton.parent_nodes(nrn.skeleton_indices),
             "lvl2_id": l2df.groupby("skind")["lvl2_id"].agg(list),
@@ -83,3 +85,14 @@ def add_downstream_column(
     ] = True
 
     return vert_df
+
+
+def update_seen_id_list(lvl2_ids: list, vertex_df: pd.DataFrame) -> list:
+    return np.unique(
+        np.concatenate(
+            [
+                lvl2_ids,
+                vertex_df["lvl2_id"].explode().values,
+            ]
+        )
+    ).tolist()

@@ -6,6 +6,11 @@ import os
 
 __version__ = "0.0.1"
 
+meta_viewport = {
+    "name": "viewport",
+    "content": "width=device-width, initial-scale=1, shrink-to-fit=no",
+}
+
 
 def create_app():
     app = Flask(
@@ -18,6 +23,7 @@ def create_app():
             "guidebook-app",
             server=app,
             url_base_pathname=os.environ.get("URL_PREFIX", "/dash/"),
+            meta_tags=[meta_viewport],
         )
     return app
 

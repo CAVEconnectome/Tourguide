@@ -27,7 +27,7 @@ def layout(**kwargs):
                             html.P("Root ID:"),
                             dbc.Input(
                                 id="guidebook-root-id",
-                                type="number",
+                                type="text",
                             ),
                         ],
                         width={"size": 3, "offset": 1},
@@ -66,7 +66,40 @@ def layout(**kwargs):
         color="info",
     )
 
-    link_section = html.Div("Links go here")
+    link_section = html.Div(
+        dbc.Row(
+            [
+                dbc.Card(
+                    [
+                        dbc.CardBody(
+                            [
+                                html.Div(
+                                    children=[
+                                        dbc.Button(
+                                            "Generate End Point Link",
+                                            id="end-point-link-button",
+                                            color="secondary",
+                                            className="d-grid gap-2 col-6 mx-auto",
+                                            style={
+                                                "align-items": "center",
+                                                "justify-content": "center",
+                                            },
+                                        ),
+                                    ]
+                                ),
+                                dbc.Spinner(
+                                    html.Div(
+                                        "", id="end-point-link", className="card-text"
+                                    ),
+                                    size="sm",
+                                ),
+                            ]
+                        )
+                    ]
+                ),
+            ],
+        )
+    )
 
     layout = [
         dcc.Location("url"),
@@ -76,7 +109,8 @@ def layout(**kwargs):
         html.Hr(),
         dbc.Container(link_section),
         html.Hr(),
-        dcc.Store(id="vertices"),
+        dcc.Store(id="vertex-data"),
+        dcc.Store(id="seen-lvl2-ids", data=[], storage_type="session"),
     ]
     return layout
 
