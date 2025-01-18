@@ -2,8 +2,8 @@ import flask
 import dash
 from dash import Dash
 
-# from .callbacks import register_callbacks
 from .external_stylesheets import external_stylesheets
+from .pages.callbacks import register_callbacks
 import pathlib
 import os
 
@@ -19,5 +19,6 @@ def create_guidebook_app(name=__name__, config={}, **kwargs):
         pages_folder=pages_folder,
         **kwargs,
     )
+    register_callbacks(dapp)
 
     return dapp

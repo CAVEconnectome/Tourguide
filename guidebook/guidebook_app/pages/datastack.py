@@ -1,7 +1,6 @@
 import dash
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-from .callbacks import *
 
 
 def title(datastack_name=None):
@@ -52,7 +51,8 @@ def layout(**kwargs):
                             type="default",
                             style={"transform": "scale(0.8)"},
                         ),
-                        align="end",
+                        align="center",
+                        width={"size": 1},
                     ),
                 ],
                 justify="start",
@@ -109,8 +109,9 @@ def layout(**kwargs):
         html.Hr(),
         dbc.Container(link_section),
         html.Hr(),
-        dcc.Store(id="vertex-data"),
+        dcc.Store(id="vertex-df"),
         dcc.Store(id="seen-lvl2-ids", data=[], storage_type="session"),
+        dcc.Store(id="curr-root-id"),
     ]
     return layout
 

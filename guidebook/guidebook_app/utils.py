@@ -47,7 +47,8 @@ def repopulate_list(col, df):
     df[col] = df[col].apply(lambda x: [float(y) for y in x.split(",")]).astype(object)
 
 
-def stash_dataframe(df, int64_cols, list_cols):
+def stash_dataframe(df, int64_cols=[], list_cols=[]):
+    """Ready a dataframe for dcc.Store JSON format"""
     df = stringify_int64s(df, int64_cols)
     for col in list_cols:
         stringify_list(col, df)
@@ -55,6 +56,7 @@ def stash_dataframe(df, int64_cols, list_cols):
 
 
 def rehydrate_dataframe(rows, list_columns=[]):
+    """Get a dataframe out of dcc.Store JSON format"""
     df = pd.DataFrame(rows)
     for col in list_columns:
         repopulate_list(col, df)

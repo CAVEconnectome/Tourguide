@@ -1,5 +1,6 @@
 from guidebook.flask_app import create_app
 from werkzeug.serving import WSGIRequestHandler
+import os
 
 app = create_app()
 

@@ -24,6 +24,7 @@ dependencies = [
     "orjson>=3.10.14",
     "pandas>=2.2.3",
     "pcg-skel>=1.2.1",
+    "scipy",
 ]
 authors = [
     { name = "Casey Schneider-Mizell", email = "caseys@alleninstitute.org" },
