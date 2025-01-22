@@ -1233,6 +1233,18 @@ wheels = [
 ]
 
 [[package]]
+name = "dash-mantine-components"
+version = "0.15.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "dash" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e9/83/0f687d8e96c020875a0bbf69757675b3b02c0087b813b3a1298cc54eb8e2/dash_mantine_components-0.15.1.tar.gz", hash = "sha256:bb24153af09ccc42972af397101ee62718ebe2bbf29fa7ed33c02997059352bd", size = 916594 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6e/b5/984de836c4a5e24c29e18b00f51fcdb44f77025221ecd0d7da28ff34532f/dash_mantine_components-0.15.1-py3-none-any.whl", hash = "sha256:974792e1973144b56d286a50ca55bdfc5d601c174dd7cc4641a1d4bcd81e339e", size = 1224192 },
+]
+
+[[package]]
 name = "dash-table"
 version = "5.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1817,6 +1829,7 @@ dependencies = [
     { name = "caveclient" },
     { name = "cryptography" },
     { name = "dash-bootstrap-components" },
+    { name = "dash-mantine-components" },
     { name = "flask" },
     { name = "meshparty" },
     { name = "middle-auth-client" },
@@ -1826,6 +1839,8 @@ dependencies = [
     { name = "orjson" },
     { name = "pandas" },
     { name = "pcg-skel" },
+    { name = "scipy", version = "1.13.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "scipy", version = "1.15.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
 ]
 
 [package.dev-dependencies]
@@ -1850,6 +1865,7 @@ requires-dist = [
     { name = "caveclient", specifier = ">=7.4.3" },
     { name = "cryptography", specifier = ">=44.0.0" },
     { name = "dash-bootstrap-components", specifier = ">=1.6.0" },
+    { name = "dash-mantine-components", specifier = ">=0.15.1" },
     { name = "flask", specifier = ">=3.1.0" },
     { name = "meshparty", specifier = ">=1.18.0" },
     { name = "middle-auth-client", specifier = ">=3.18.1" },
@@ -1858,6 +1874,7 @@ requires-dist = [
     { name = "orjson", specifier = ">=3.10.14" },
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "pcg-skel", specifier = ">=1.2.1" },
+    { name = "scipy" },
 ]
 
 [package.metadata.requires-dev]

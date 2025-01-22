@@ -1,6 +1,7 @@
 from typing import Optional
 from caveclient.tools.caching import CachedClient
 from caveclient import CAVEclient
+import dash_mantine_components as dmc
 import pandas as pd
 import re
 
@@ -61,3 +62,47 @@ def rehydrate_dataframe(rows, list_columns=[]):
     for col in list_columns:
         repopulate_list(col, df)
     return df
+
+
+def _basic_button(
+    text: str,
+    is_filled: bool,
+    button_id: Optional[str] = None,
+    disabled: bool = False,
+    **kwargs,
+):
+    return dmc.Button(
+        text,
+        color="indigo",
+        style={
+            "align-items": "center",
+            "justify-content": "center",
+        },
+        loaderProps={"type": "dots"},
+        variant="solid" if is_filled else "outline",
+        id=button_id,
+        fullWidth=True,
+        disabled=disabled,
+        **kwargs,
+    )
+
+
+def link_maker_button(
+    text: str,
+    button_id: Optional[str] = None,
+    url: Optional[str] = None,
+    disabled=False,
+    **kwargs,
+):
+    if url is not None:
+        return dmc.Anchor(
+            _basic_button(
+                text, button_id=button_id, is_filled=True, disabled=False, **kwargs
+            ),
+            href=url,
+            target="_blank",
+        )
+    else:
+        return _basic_button(
+            text, button_id=button_id, is_filled=False, disabled=disabled, **kwargs
+        )

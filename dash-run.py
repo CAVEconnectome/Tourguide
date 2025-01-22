@@ -1,5 +1,6 @@
 import dash
 from dash import Dash
+import dash_mantine_components as dmc
 
 from guidebook.guidebook_app.external_stylesheets import external_stylesheets
 from guidebook.guidebook_app.pages.callbacks import register_callbacks
@@ -13,7 +14,7 @@ dapp = Dash(
     name="dashtest",
     use_pages=True,
     pages_folder=pages_folder,
-    external_stylesheets=external_stylesheets,
+    external_stylesheets=dmc.styles.ALL,
 )
 register_callbacks(dapp)
 

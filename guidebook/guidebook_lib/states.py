@@ -12,13 +12,14 @@ DEFAULT_SEGMENTATION_VIEW_KWS = {
     "alpha_3d": 0.8,
     "alpha_unselected": 0,
 }
+DEFAULT_ZOOM = 220_000
 
 
 def set_default_ngl_configuration(
     datastack_name: str,
     target_url: str,
     target_site: str = "spelunker",
-):
+) -> None:
     nglui.statebuilder.site_utils.set_default_config(
         target_site=target_site,
         target_url=target_url,
@@ -27,7 +28,7 @@ def set_default_ngl_configuration(
     )
 
 
-def config_ngl(client, target_url=None, target_site="spelunker"):
+def config_ngl(client, target_url=None, target_site="spelunker") -> None:
     datastack_name = client.datastack_name
     try:
         nglui.statebuilder.site_utils.get_default_config(datastack_name)
@@ -43,7 +44,7 @@ def base_layers(
     client: caveclient.CAVEclient,
     use_skeleton_service: bool,
     root_ids: list = [],
-):
+) -> tuple:
     img, seg = nglui.statebuilder.from_client(
         client,
         image_name="imagery",
@@ -70,6 +71,7 @@ def end_point_link(
         datastack_name=client.datastack_name,
         split_positions=True,
         root_ids=[root_id],
+        view_kws={"zoom_3d": DEFAULT_ZOOM},
         client=client,
     )
     return sb.render_state(
@@ -97,7 +99,7 @@ def make_point_statebuilder(
     root_ids: list = [],
     layer_colors: dict = {},
     view_kws: dict = {},
-):
+) -> nglui.statebuilder.StateBuilder:
     img, seg = base_layers(
         client, use_skeleton_service=use_skeleton_service, root_ids=root_ids
     )
@@ -131,7 +133,7 @@ def make_path_statebuilder():
 def make_point_link(
     point_dfs: dict,
     point_statebuilder: nglui.statebuilder.StateBuilder,
-):
+) -> str:
     return point_statebuilder.render_state(
         point_dfs,
         return_as="short",
