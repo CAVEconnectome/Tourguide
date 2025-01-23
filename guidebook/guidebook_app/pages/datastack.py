@@ -35,7 +35,6 @@ def layout(**kwargs):
                     children="Submit",
                     id="submit-button",
                     color="var(--mantine-color-indigo-7)",
-                    # loaderProps={"type": "dots"},
                 ),
                 span=1,
             ),
@@ -55,7 +54,7 @@ def layout(**kwargs):
         label="Predicted Compartment:",
         children=dmc.Stack(
             [
-                dmc.Radio("Whole Cell", value="all-cell"),
+                dmc.Radio("Whole Cell", mt="5px", value="all-cell"),
                 dmc.Radio(
                     "Axon Only",
                     id="radio-axon",
@@ -78,76 +77,130 @@ def layout(**kwargs):
 
     split_point_option = dmc.Stack(
         [
-            dmc.RadioGroup(
-                id="split-point-radio",
+            dmc.Select(
+                id="split-point-select",
                 label="Split at point:",
-                children=dmc.Stack(
-                    [
-                        dmc.Radio("Upstream of", value="upstream-of"),
-                        dmc.Radio("Downstream of", value="downstream-of"),
-                    ]
-                ),
-                deselectable=True,
-                size="sm",
+                data=[
+                    {"label": "No split", "value": "no-split"},
+                    {"label": "Upstream of", "value": "upstream-of"},
+                    {"label": "Downstream of", "value": "downstream-of"},
+                ],
+                value="no-split",
+                mb=10,
             ),
             dmc.TextInput(
                 id="split-point-input",
+                description="Use standard neuroglancer coordinates for the dataset",
             ),
         ]
     )
 
-    new_point_selector = dmc.Checkbox(
-        "Only new points in session", id="new-point-checkbox"
+    new_point_selector = dmc.Stack(
+        [
+            dmc.Checkbox(
+                "Only previously unseen points in browser session",
+                mt="10px",
+                id="new-point-checkbox",
+            ),
+            dmc.Text(
+                children="No existing points in session",
+                id="previously-unseen-message",
+                fs="xs",
+                c="gray",
+            ),
+            dmc.Modal(
+                title="Clear Unseen Points",
+                color="gray",
+                id="clear-history-modal",
+                children=[
+                    dmc.Text(
+                        "Are you sure you want to clear your history of seen points? Points will clear automatically on browser quitting."
+                    ),
+                    dmc.Space(h=20),
+                    dmc.Group(
+                        [
+                            dmc.Button("Clear History", id="clear-history-button"),
+                            dmc.Button(
+                                "Cancel",
+                                color="red",
+                                id="clear-history-cancel",
+                                variant="outline",
+                            ),
+                        ],
+                        justify="flex-end",
+                    ),
+                ],
+            ),
+        ]
     )
 
     time_restriction = dmc.Stack(
         [
             dmc.Checkbox(
-                "Only points since...", id="use-time-restriction", checked=False
+                "Only points since...",
+                id="use-time-restriction",
+                checked=False,
+                mt="10px",
             ),
             dmc.DateTimePicker(
                 id="restriction-datetime",
                 label="Date and time",
-                valueFormat="DD MMM YYYY hh:mm A",
                 value=datetime.now(),
                 disabled=True,
             ),
+            dmc.Text(
+                children="",
+                id="datetime-debug-message",
+                fs="xs",
+                c="gray",
+            ),
         ]
     )
 
-    restriction_options = dmc.Grid(
+    restriction_options = dmc.SimpleGrid(
         [
-            dmc.GridCol(
-                compartment_radio,
-                span=2,
+            dmc.Card(
+                [
+                    dmc.CardSection(
+                        dmc.Text(
+                            "Cell Filters", fw=600, bg="var(--mantine-color-blue-1)"
+                        ),
+                        withBorder=True,
+                        inheritPadding=True,
+                    ),
+                    dmc.SimpleGrid(
+                        [
+                            compartment_radio,
+                            split_point_option,
+                        ],
+                        cols=2,
+                    ),
+                ],
+                py="sx",
             ),
-            dmc.GridCol(
-                split_point_option,
-                span=2,
-            ),
-            dmc.GridCol(
-                new_point_selector,
-                span=2,
-            ),
-            dmc.GridCol(
-                time_restriction,
-                span=2,
+            dmc.Card(
+                [
+                    dmc.CardSection(
+                        dmc.Text(
+                            "Time Filters", fw=600, bg="var(--mantine-color-teal-1)"
+                        ),
+                        withBorder=True,
+                        inheritPadding=True,
+                    ),
+                    dmc.SimpleGrid(
+                        [
+                            new_point_selector,
+                            time_restriction,
+                        ],
+                        cols=2,
+                    ),
+                ],
+                py="sx",
             ),
         ],
-    )
-
-    restriction_row = dmc.Accordion(
-        children=[
-            dmc.AccordionItem(
-                [
-                    dmc.AccordionControl(
-                        "Restrictions", style={"font-size": "1.25rem"}
-                    ),
-                    dmc.AccordionPanel(children=restriction_options),
-                ],
-                value="restriction-accordion",
-            )
-        ]
+        cols=2,
+        spacing="md",
+        mt="15px",
     )
 
     point_links = dmc.Container(
@@ -217,7 +270,7 @@ def layout(**kwargs):
             dmc.Container(query_section, fluid=True, w="80%"),
             dmc.Container(message_row, fluid=True, w="80%"),
             dmc.Container(dmc.Divider(), fluid=True, w="80%"),
-            dmc.Container(restriction_row, fluid=True, w="80%"),
+            dmc.Container(restriction_options, fluid=True, w="80%"),
             dmc.Container(dmc.Divider(), fluid=True, w="80%"),
             dmc.Container(
                 dmc.Text(
@@ -230,7 +283,11 @@ def layout(**kwargs):
             dmc.Container(output_tabs, fluid=True, w="80%"),
             dcc.Store(id="timezone-offset"),
             dcc.Store(id="vertex-df"),
-            dcc.Store(id="seen-lvl2-ids", data=[], storage_type="session"),
+            dcc.Store(
+                id="seen-lvl2-ids",
+                data=[],
+                storage_type="session",
+            ),
             dcc.Store(id="curr-root-id"),
         ]
     )

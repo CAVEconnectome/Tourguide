@@ -19,7 +19,7 @@ def create_guidebook_app(name=__name__, config={}, **kwargs):
     dapp = Dash(
         name,
         use_pages=True,
-        external_stylesheets=dmc.styles.ALL,
+        external_stylesheets=external_stylesheets,
         pages_folder=pages_folder,
         **kwargs,
     )

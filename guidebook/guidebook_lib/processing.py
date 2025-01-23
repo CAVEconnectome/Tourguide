@@ -1,9 +1,10 @@
 import numpy as np
 from meshparty import meshwork, skeleton
-from ..guidebook_app.utils import make_client
-from typing import Optional
+from typing import Literal, Optional
 import pandas as pd
 from scipy import sparse
+import caveclient
+from pcg_skel import chunk_tools
 
 VERTEX_POINT = "pt"
 VERTEX_COLUMNS = [f"{VERTEX_POINT}_{suf}" for suf in ["x", "y", "z"]]
@@ -15,6 +16,10 @@ LVL2_ID_COLUMN = "lvl2_id"
 END_POINT_COLUMN = "is_end"
 BRANCH_POINT_COLUMN = "is_branch"
 ROOT_COLUMN = "is_root"
+NEW_POINT_COLUMN = "is_new_point"
+NEW_TIMESTAMP_COLUMN = "timestamp_is_newer"
+
+RESTRICT_OPTIONS = ["upstream-of", "downstream-of"]
 
 
 def process_meshwork_to_dataframe(
@@ -122,12 +127,80 @@ def add_downstream_column(
     return vert_df
 
 
-def update_seen_id_list(lvl2_ids: list, vertex_df: pd.DataFrame) -> list:
-    return np.unique(
-        np.concatenate(
-            [
-                lvl2_ids,
-                vertex_df[LVL2_ID_COLUMN].explode().values,
-            ]
+def process_new_points(vertex_df: pd.DataFrame, seen_lvl2_ids: list) -> pd.DataFrame:
+    "Check if any l2 id associated with a skeleton vertex is new"
+    vertex_df[NEW_POINT_COLUMN] = True
+    l2seen = vertex_df[LVL2_ID_COLUMN].explode().isin(seen_lvl2_ids)
+    l2seen = l2seen[l2seen].index.unique()
+    vertex_df.loc[l2seen, NEW_POINT_COLUMN] = False
+    return vertex_df
+
+
+def add_timestamp_relative_vertex(
+    vertex_df: pd.DataFrame,
+    client: caveclient.CAVEclient,
+    horizon_timestamp: int,
+) -> pd.DataFrame:
+    l2all = vertex_df[LVL2_ID_COLUMN].explode()
+    ts = client.chunkedgraph.get_root_timestamps(l2all)
+    ts_df = pd.DataFrame({"lvl2_id": l2all, "timestamp": [t.timestamp() for t in ts]})
+    ts_newer_idx = ts_df.query(f"timestamp >= {horizon_timestamp}").index.unique()
+
+    vertex_df[NEW_TIMESTAMP_COLUMN] = False
+    vertex_df.loc[ts_newer_idx, NEW_TIMESTAMP_COLUMN] = True
+    return vertex_df
+
+
+def filter_dataframe(
+    root_id: int,
+    vertex_df: pd.DataFrame,
+    compartment_filter: Literal["axon", "dendrite", "all"] = None,
+    restriction_direction: Optional[Literal["downstream-of", "upstream-of"]] = None,
+    restriction_point: Optional[list] = None,
+    only_new_lvl2: bool = False,
+    only_after_timestamp: bool = False,
+    horizon_timestamp: Optional[int] = None,
+    client: Optional[caveclient.CAVEclient] = None,
+):
+    qry_str = []
+    if compartment_filter == "axon":
+        qry_str.append(f"{IS_AXON_COLUMN} == True")
+    elif compartment_filter == "dendrite":
+        qry_str.append(f"{IS_AXON_COLUMN} == False")
+
+    if restriction_direction in RESTRICT_OPTIONS and restriction_point is not None:
+        split_lvl2_id = chunk_tools.get_closest_lvl2_chunk(
+            point=restriction_point,
+            root_id=root_id,
+            client=client,
+            voxel_resolution=client.info.viewer_resolution(),
+            radius=300,
         )
-    ).tolist()
+        if restriction_direction == "upstream-of":
+            qry_str.append(f"is_downstream == False")
+            vertex_df = add_downstream_column(
+                vertex_df,
+                split_lvl2_id,
+                inclusive=False,
+                downstream_column="is_downstream",
+            )
+        elif restriction_direction == "downstream-of":
+            qry_str.append(f"is_downstream == True")
+            vertex_df = add_downstream_column(
+                vertex_df,
+                split_lvl2_id,
+                inclusive=True,
+                downstream_column="is_downstream",
+            )
+
+    if only_new_lvl2:
+        qry_str.append("is_new_point == True")
+    if only_after_timestamp:
+        vertex_df[NEW_TIMESTAMP_COLUMN] = add_timestamp_relative_vertex(
+            vertex_df, client, horizon_timestamp
+        )
+        qry_str.append(f"{NEW_TIMESTAMP_COLUMN} == True")
+    if len(qry_str) == 0:
+        return vertex_df
+    else:
+        return vertex_df.query(" and ".join(qry_str))
