@@ -25,6 +25,7 @@ import pandas as pd
 import time
 import os
 from urllib.parse import parse_qs, urlparse, urlencode
+from datetime import datetime, timezone
 
 VERTEX_LIST_COLS = ["lvl2_id"]
 
@@ -118,13 +119,13 @@ def link_process_generic(
         client=client,
     )
     if sum(vertex_df[END_POINT_COLUMN]) == 0:
-        return url_function(
+        return link_maker_button(
             f"No Matching {point_name}s",
             button_id=button_id,
             disabled=True,
         )
     else:
-        url = states.end_point_link(int(root_id), vertex_df, client)
+        url = url_function(int(root_id), vertex_df, client)
         return link_maker_button(
             f"{point_name} Link",
             button_id=button_id,
@@ -164,6 +165,8 @@ def register_callbacks(app):
         Output("message-text", "children"),
         Output("message-text", "color"),
         Output("end-point-link-button", "disabled"),
+        Output("branch-point-link-button", "disabled"),
+        Output("branch-end-point-link-button", "disabled"),
         Output("radio-axon", "disabled"),
         Output("radio-dendrite", "disabled"),
         Output("url", "search"),
@@ -186,6 +189,8 @@ def register_callbacks(app):
                 seen_lvl2_ids,
                 "Please provide a Root ID",
                 "yellow",
+                True,
+                True,
                 True,
                 True,
                 True,
@@ -215,6 +220,8 @@ def register_callbacks(app):
                 True,
                 True,
                 True,
+                True,
+                True,
                 url_query_from_root_id(root_id),
             )
 
@@ -231,6 +238,8 @@ def register_callbacks(app):
             new_seen_lvl2_ids,
             message_text,
             message_color,
+            False,
+            False,
             False,
             disable_compartments,
             disable_compartments,
@@ -266,17 +275,129 @@ def register_callbacks(app):
         utc_offset,
         _,
     ):
-        end_point_default = (
+        point_name = "End Point"
+        button_id = "end-point-link-button"
+        default_button = (
             link_maker_button(
-                "Generate End Point Link",
-                button_id="end-point-link-button",
+                f"Generate {point_name} Link",
+                button_id=button_id,
+            ),
+        )
+
+        return link_process_generic(
+            point_name,
+            button_id,
+            states.end_point_link,
+            default_button,
+            ctx.triggered_id,
+            root_id,
+            vertex_data,
+            url_path,
+            compartment_filter,
+            point_filter,
+            restriction_point,
+            only_new_lvl2,
+            use_time_restriction,
+            convert_time_string_to_utc(restriction_datetime, utc_offset),
+        )
+
+    @app.callback(
+        Output("branch-point-link-card", "children"),
+        State("curr-root-id", "data"),
+        State("vertex-df", "data"),
+        State("url", "pathname"),
+        Input("compartment-radio", "value"),
+        Input("split-point-select", "value"),
+        Input("split-point-input", "value"),
+        Input("new-point-checkbox", "checked"),
+        Input("use-time-restriction", "checked"),
+        Input("restriction-datetime", "value"),
+        Input("timezone-offset", "data"),
+        Input("branch-point-link-button", "n_clicks"),
+        prevent_initial_call=True,
+        running=[(Output("branch-point-link-button", "loading"), True, False)],
+    )
+    def generate_branch_point_link(
+        root_id,
+        vertex_data,
+        url_path,
+        compartment_filter,
+        point_filter,
+        restriction_point,
+        only_new_lvl2,
+        use_time_restriction,
+        restriction_datetime,
+        utc_offset,
+        _,
+    ):
+        point_name = "Branch Point"
+        button_id = "branch-point-link-button"
+        default_button = (
+            link_maker_button(
+                f"Generate {point_name} Link",
+                button_id=button_id,
+            ),
+        )
+
+        return link_process_generic(
+            point_name,
+            button_id,
+            states.branch_point_link,
+            default_button,
+            ctx.triggered_id,
+            root_id,
+            vertex_data,
+            url_path,
+            compartment_filter,
+            point_filter,
+            restriction_point,
+            only_new_lvl2,
+            use_time_restriction,
+            convert_time_string_to_utc(restriction_datetime, utc_offset),
+        )
+
+    @app.callback(
+        Output("branch-end-point-link-card", "children"),
+        State("curr-root-id", "data"),
+        State("vertex-df", "data"),
+        State("url", "pathname"),
+        Input("compartment-radio", "value"),
+        Input("split-point-select", "value"),
+        Input("split-point-input", "value"),
+        Input("new-point-checkbox", "checked"),
+        Input("use-time-restriction", "checked"),
+        Input("restriction-datetime", "value"),
+        Input("timezone-offset", "data"),
+        Input("branch-end-point-link-button", "n_clicks"),
+        prevent_initial_call=True,
+        running=[(Output("branch-end-point-link-button", "loading"), True, False)],
+    )
+    def generate_branch_end_point_link(
+        root_id,
+        vertex_data,
+        url_path,
+        compartment_filter,
+        point_filter,
+        restriction_point,
+        only_new_lvl2,
+        use_time_restriction,
+        restriction_datetime,
+        utc_offset,
+        _,
+    ):
+        point_name = "Branch and End Point"
+        button_id = "branch-end-point-link-button"
+        default_button = (
+            link_maker_button(
+                f"Generate {point_name} Link",
+                button_id=button_id,
             ),
         )
         return link_process_generic(
-            "End Point",
-            "end-point-link-button",
-            states.end_point_link,
-            end_point_default,
+            point_name,
+            button_id,
+            states.branch_end_point_link,
+            default_button,
             ctx.triggered_id,
             root_id,
             vertex_data,
@@ -318,15 +439,6 @@ def register_callbacks(app):
         return False, input_value, error_value
 
     @app.callback(
-        Output("datetime-debug-message", "children"),
-        State("restriction-datetime", "value"),
-        Input("timezone-offset", "data"),
-        prevent_initial_call=True,
-    )
-    def debug_datetime(value, offset):
-        return f"Time: {convert_time_string_to_utc(value, offset)}"
-
-    @app.callback(
         Output("clear-history-modal", "opened"),
         Input("clear-history-modal-toggle", "n_clicks"),
         Input("clear-history-confirm", "n_clicks"),
@@ -351,3 +463,16 @@ def register_callbacks(app):
     )
     def previously_seen_lvl2_ids(seen_lvl2_ids):
         return f"{len(seen_lvl2_ids)} previously seen vertex ids"
+
+    @app.callback(
+        Output("restriction-datetime", "error"),
+        Input("restriction-datetime", "value"),
+        State("timezone-offset", "data"),
+        prevent_initial_call=True,
+    )
+    def validate_datetime(ts, utc_offset):
+        if (
+            convert_time_string_to_utc(ts, utc_offset)
+            > datetime.now(timezone.utc).timestamp()
+        ):
+            return "Time selected is in the future"

@@ -14,6 +14,11 @@ DEFAULT_SEGMENTATION_VIEW_KWS = {
 }
 DEFAULT_ZOOM = 220_000
 
+LAYER_COLORS = {
+    "end_points": "DarkTurquoise",
+    "branch_points": "OrangeRed",
+}
+
 
 def set_default_ngl_configuration(
     datastack_name: str,
@@ -57,35 +62,90 @@ def base_layers(
     return img, seg
 
 
-def end_point_link(
+def _make_point_link(
+    point_link_layers: list,
     root_id: int,
     vertex_df: pd.DataFrame,
-    client: str,
+    client: caveclient.CAVEclient,
     use_skeleton_service: bool = True,
-) -> str:
+):
     config_ngl(client)
     sb = make_point_statebuilder(
-        layers=["end_points"],
+        layers=point_link_layers,
         resolution=client.info.viewer_resolution(),
         use_skeleton_service=use_skeleton_service,
         datastack_name=client.datastack_name,
         split_positions=True,
         root_ids=[root_id],
         view_kws={"zoom_3d": DEFAULT_ZOOM},
+        layer_colors=LAYER_COLORS,
         client=client,
     )
+
+    sort_order = [
+        processing.IS_AXON_COLUMN,
+        processing.BRANCH_GROUP_COLUMN,
+        processing.DISTANCE_COLUMN,
+    ]
+
+    data_map = {}
+    if "end_points" in point_link_layers:
+        data_map["end_points"] = vertex_df.query(
+            processing.END_POINT_COLUMN
+        ).sort_values(by=sort_order)
+    if "branch_points" in point_link_layers:
+        data_map["branch_points"] = vertex_df.query(
+            processing.BRANCH_POINT_COLUMN
+        ).sort_values(by=sort_order)
     return sb.render_state(
-        {
-            "end_points": vertex_df.query(processing.END_POINT_COLUMN).sort_values(
-                by=[
-                    processing.IS_AXON_COLUMN,
-                    processing.BRANCH_GROUP_COLUMN,
-                    processing.DISTANCE_COLUMN,
-                ]
-            )
-        },
+        data_map,
         return_as="short",
         config_key=client.datastack_name,
+    )
+
+
+def end_point_link(
+    root_id: int,
+    vertex_df: pd.DataFrame,
+    client: str,
+    use_skeleton_service: bool = True,
+) -> str:
+    return _make_point_link(
+        ["end_points"],
+        root_id,
+        vertex_df,
+        client,
+        use_skeleton_service,
+    )
+
+
+def branch_point_link(
+    root_id: int,
+    vertex_df: pd.DataFrame,
+    client: str,
+    use_skeleton_service: bool = True,
+) -> str:
+    return _make_point_link(
+        ["branch_points"],
+        root_id,
+        vertex_df,
+        client,
+        use_skeleton_service,
+    )
+
+
+def branch_end_point_link(
+    root_id: int,
+    vertex_df: pd.DataFrame,
+    client: str,
+    use_skeleton_service: bool = True,
+) -> str:
+    return _make_point_link(
+        ["end_points", "branch_points"],
+        root_id,
+        vertex_df,
+        client,
+        use_skeleton_service,
     )
 
 

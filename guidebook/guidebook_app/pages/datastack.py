@@ -167,12 +167,6 @@ def layout(**kwargs):
                 value=datetime.now(),
                 disabled=True,
             ),
-            dmc.Text(
-                children="",
-                id="datetime-debug-message",
-                fs="xs",
-                c="gray",
-            ),
         ]
     )
 
@@ -237,18 +231,24 @@ def layout(**kwargs):
                     span=4,
                 ),
                 dmc.GridCol(
-                    link_maker_button(
-                        "Generate Branch Point Link",
-                        button_id="branch-point-link-button",
-                        disabled=True,
+                    html.Div(
+                        link_maker_button(
+                            "Generate Branch Point Link",
+                            button_id="branch-point-link-button",
+                            disabled=True,
+                        ),
+                        id="branch-point-link-card",
                     ),
                     span=4,
                 ),
                 dmc.GridCol(
-                    link_maker_button(
-                        "Generate End and Branch Point Link",
-                        button_id="end-branch-point-link-button",
-                        disabled=True,
+                    html.Div(
+                        link_maker_button(
+                            "Generate End and Branch Point Link",
+                            button_id="branch-end-point-link-button",
+                            disabled=True,
+                        ),
+                        id="branch-end-point-link-card",
                     ),
                     span=4,
                 ),
