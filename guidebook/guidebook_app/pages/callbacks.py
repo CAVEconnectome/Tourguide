@@ -24,6 +24,7 @@ from pcg_skel import get_meshwork_from_client
 import pandas as pd
 import time
 import os
+from urllib.parse import parse_qs, urlparse, urlencode
 
 VERTEX_LIST_COLS = ["lvl2_id"]
 
@@ -42,6 +43,25 @@ def get_datastack(pathname):
         return pathname.split("/")[-1]
     else:
         return None
+
+
+def _url_query_dict(search_qry):
+    if search_qry is None or search_qry == "":
+        return {}
+    else:
+        return parse_qs(urlparse(search_qry).query)
+
+
+def root_id_from_url_query(search_qry):
+    root_id = _url_query_dict(search_qry).get("root_id", [None])[0]
+    try:
+        return root_id
+    except:
+        return None
+
+
+def url_query_from_root_id(root_id):
+    return "?" + urlencode(query={"root_id": str(root_id)})
 
 
 def link_process_generic(
@@ -120,6 +140,13 @@ def register_callbacks(app):
             className="text-center",
         )
 
+    @app.callback(
+        Output("guidebook-root-id", "value"),
+        Input("url", "search"),
+    )
+    def set_root_id(search):
+        return root_id_from_url_query(search)
+
     # Get offset between browser time and UTC time.
     app.clientside_callback(
         """function n(d) {
@@ -139,6 +166,7 @@ def register_callbacks(app):
         Output("end-point-link-button", "disabled"),
         Output("radio-axon", "disabled"),
         Output("radio-dendrite", "disabled"),
+        Output("url", "search"),
         [
             State("guidebook-root-id", "value"),
             State("url", "pathname"),
@@ -161,6 +189,7 @@ def register_callbacks(app):
                 True,
                 True,
                 True,
+                None,
             )
         client = lib_utils.make_client(
             get_datastack(url),
@@ -186,6 +215,7 @@ def register_callbacks(app):
                 True,
                 True,
                 True,
+                url_query_from_root_id(root_id),
             )
 
         seen_lvl2_ids = rehydrate_id_list(seen_lvl2_ids)
@@ -204,6 +234,7 @@ def register_callbacks(app):
             False,
             disable_compartments,
             disable_compartments,
+            url_query_from_root_id(root_id),
         )
 
     @app.callback(

@@ -278,7 +278,7 @@ def layout(**kwargs):
 
     layout = dmc.MantineProvider(
         children=[
-            dcc.Location("url"),
+            dcc.Location("url", refresh=False),
             dcc.Interval(
                 id="load-interval",
                 n_intervals=0,
