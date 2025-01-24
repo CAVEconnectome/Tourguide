@@ -129,7 +129,7 @@ def layout(**kwargs):
                     dmc.Space(h=4),
                     dmc.Text(id="previously-unseen-message", c="gray"),
                     dmc.Text(
-                        f"Points will clear automatically on browser quitting.",
+                        f"Points will clear automatically when you quit this browser.",
                         c="gray",
                         fs="xs",
                     ),
