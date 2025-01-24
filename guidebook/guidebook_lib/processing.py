@@ -5,6 +5,7 @@ import pandas as pd
 from scipy import sparse
 import caveclient
 from pcg_skel import chunk_tools
+from datetime import datetime
 
 VERTEX_POINT = "pt"
 VERTEX_COLUMNS = [f"{VERTEX_POINT}_{suf}" for suf in ["x", "y", "z"]]
@@ -17,7 +18,7 @@ END_POINT_COLUMN = "is_end"
 BRANCH_POINT_COLUMN = "is_branch"
 ROOT_COLUMN = "is_root"
 NEW_POINT_COLUMN = "is_new_point"
-NEW_TIMESTAMP_COLUMN = "timestamp_is_newer"
+NEW_TIMESTAMP_COLUMN = "not_in_previous_match"
 
 RESTRICT_OPTIONS = ["upstream-of", "downstream-of"]
 
@@ -102,21 +103,18 @@ def add_downstream_column(
     Returns
     -------
     pd.DataFrame
-        A dataframe with a boolean column indicating if vertices are
+        A dataframe with a boolean column indicating if vertices are downstream of the specified point
     """
     try:
-        first_skind = (
-            vert_df.explode(LVL2_ID_COLUMN)
-            .query(f"{LVL2_ID_COLUMN}=={base_lvl2_id}")[PARENT_COLUMN]
-            .values[0]
-        )
+        l2s_long = vert_df[LVL2_ID_COLUMN].explode()
+        first_skind = l2s_long[l2s_long == base_lvl2_id].index[0]
     except:
         raise ValueError(f"Could not find vertex with level 2 id {base_lvl2_id}")
 
     sk = skeleton.Skeleton(
         vertices=vert_df[VERTEX_COLUMNS].values,
         edges=vert_df.query(f"{PARENT_COLUMN}!=-1")[PARENT_COLUMN].reset_index().values,
-        root=int(vert_df.query(PARENT_COLUMN).index[0]),
+        root=int(vert_df.query(ROOT_COLUMN).index[0]),
     )
 
     vert_df[downstream_column] = False
@@ -136,18 +134,51 @@ def process_new_points(vertex_df: pd.DataFrame, seen_lvl2_ids: list) -> pd.DataF
     return vertex_df
 
 
+def get_highest_overlap_lvl2_ids(root_id, timestamp, client):
+    "Get level 2 ids for the past root with the highest overlap with the current root"
+    if isinstance(timestamp, float):
+        timestamp = datetime.fromtimestamp(timestamp)
+    id_dict = client.chunkedgraph.get_past_ids(
+        root_ids=root_id,
+        timestamp_past=timestamp,
+    )
+    base_lvl2 = client.chunkedgraph.get_leaves(root_id, stop_layer=2)
+
+    # As a heuristic, we start from the newest of the past roots because
+    # it is likely to be a frequently edited object.
+    past_ids = np.array(id_dict["past_id_map"].get(root_id, []))
+    past_ids = past_ids[
+        np.argsort(client.chunkedgraph.get_root_timestamps(past_ids))[::-1]
+    ]
+
+    relative_fracs = []
+    past_lvl2 = {}
+    for rid in past_ids:
+        past_lvl2[rid] = client.chunkedgraph.get_leaves(rid, stop_layer=2)
+        rel_frac = len(np.intersect1d(base_lvl2, past_lvl2[rid])) / len(base_lvl2)
+        relative_fracs.append(rel_frac)
+        # If the highest value seen is greater than what is left, stop
+        if max(relative_fracs) > 1 - sum(relative_fracs):
+            break
+
+    highest_past = past_ids[np.argmax(relative_fracs)]
+    return past_lvl2[highest_past]
+
+
 def add_timestamp_relative_vertex(
+    root_id: int,
     vertex_df: pd.DataFrame,
     client: caveclient.CAVEclient,
     horizon_timestamp: int,
 ) -> pd.DataFrame:
-    l2all = vertex_df[LVL2_ID_COLUMN].explode()
-    ts = client.chunkedgraph.get_root_timestamps(l2all)
-    ts_df = pd.DataFrame({"lvl2_id": l2all, "timestamp": [t.timestamp() for t in ts]})
-    ts_newer_idx = ts_df.query(f"timestamp >= {horizon_timestamp}").index.unique()
+    "Add a column indicating True if vertex was not part of the best matching id at a previous timestamp"
+    l2_previous_match = get_highest_overlap_lvl2_ids(root_id, horizon_timestamp, client)
+    not_in_previous = ~vertex_df[LVL2_ID_COLUMN].explode().isin(l2_previous_match)
 
+    # Treat everything as seen, then mark any that existed before as unseen
     vertex_df[NEW_TIMESTAMP_COLUMN] = False
-    vertex_df.loc[ts_newer_idx, NEW_TIMESTAMP_COLUMN] = True
+    l2_newer_idx = not_in_previous[not_in_previous].index.unique()
+    vertex_df.loc[l2_newer_idx, NEW_TIMESTAMP_COLUMN] = True
     return vertex_df
 
 
@@ -196,8 +227,8 @@ def filter_dataframe(
     if only_new_lvl2:
         qry_str.append("is_new_point == True")
     if only_after_timestamp:
-        vertex_df[NEW_TIMESTAMP_COLUMN] = add_timestamp_relative_vertex(
-            vertex_df, client, horizon_timestamp
+        vertex_df = add_timestamp_relative_vertex(
+            root_id, vertex_df, client, horizon_timestamp
         )
         qry_str.append(f"{NEW_TIMESTAMP_COLUMN} == True")
     if len(qry_str) == 0:

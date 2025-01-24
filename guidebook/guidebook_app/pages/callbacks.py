@@ -17,6 +17,7 @@ from ...guidebook_lib.processing import (
     VERTEX_COLUMNS,
     END_POINT_COLUMN,
     BRANCH_GROUP_COLUMN,
+    LVL2_ID_COLUMN,
 )
 from ...guidebook_lib import states, lib_utils
 from pcg_skel import get_meshwork_from_client
@@ -25,6 +26,15 @@ import time
 import os
 
 VERTEX_LIST_COLS = ["lvl2_id"]
+
+RESET_LINK_TRIGGERS = [
+    "use-time-restriction",
+    "restriction-datetime",
+    "new-point-checkbox",
+    "split-point-input",
+    "split-point-select",
+    "compartment-radio",
+]
 
 
 def get_datastack(pathname):
@@ -50,14 +60,18 @@ def link_process_generic(
     only_after_timestamp,
     horizon_timestamp,
 ):
-    if (
-        trigger_id == "compartment-radio"
-        or trigger_id == "split-point-select"
-        or trigger_id == "split-point-input"
-    ):
-        return default_button
-
+    # Not having good data should also reset the links
     if root_id is None or root_id == "" or vertex_data is None or vertex_data == []:
+        return (
+            link_maker_button(
+                f"Generate {point_name} Link",
+                button_id=button_id,
+                disabled=True,
+            ),
+        )
+
+    # Adjusting filters should reset the links
+    if trigger_id in RESET_LINK_TRIGGERS:
         return default_button
 
     datastack_name = get_datastack(url_path)
@@ -74,7 +88,7 @@ def link_process_generic(
 
     vertex_df = filter_dataframe(
         root_id=int(root_id),
-        vertex_df=rehydrate_dataframe(vertex_data),
+        vertex_df=rehydrate_dataframe(vertex_data, list_columns=[LVL2_ID_COLUMN]),
         compartment_filter=compartment_filter,
         restriction_direction=point_filter,
         restriction_point=restriction_point,
@@ -119,13 +133,12 @@ def register_callbacks(app):
     @app.callback(
         Output("curr-root-id", "data"),
         Output("vertex-df", "data"),
-        Output("seen-lvl2-ids", "data"),
+        Output("seen-lvl2-ids", "data", allow_duplicate=True),
         Output("message-text", "children"),
         Output("message-text", "color"),
         Output("end-point-link-button", "disabled"),
         Output("radio-axon", "disabled"),
         Output("radio-dendrite", "disabled"),
-        Output("previously-unseen-message", "children"),
         [
             State("guidebook-root-id", "value"),
             State("url", "pathname"),
@@ -136,8 +149,6 @@ def register_callbacks(app):
         running=[(Output("submit-button", "loading"), True, False)],
     )
     def process_root_id(root_id, url, _, seen_lvl2_ids):
-        num_seen_lvl2_ids = len(seen_lvl2_ids)
-        lvl2_message = f"{num_seen_lvl2_ids} previously seen lvl2 ids"
         t0 = time.time()
         if root_id is None:
             vertex_df = pd.DataFrame(columns=VERTEX_COLUMNS)
@@ -150,7 +161,6 @@ def register_callbacks(app):
                 True,
                 True,
                 True,
-                lvl2_message,
             )
         client = lib_utils.make_client(
             get_datastack(url),
@@ -176,7 +186,6 @@ def register_callbacks(app):
                 True,
                 True,
                 True,
-                lvl2_message,
             )
 
         seen_lvl2_ids = rehydrate_id_list(seen_lvl2_ids)
@@ -188,14 +197,13 @@ def register_callbacks(app):
         new_seen_lvl2_ids = update_seen_id_list(seen_lvl2_ids, vertex_df)
         return (
             str(root_id),
-            stash_dataframe(vertex_df, list_cols=["lvl2_id"]),
+            stash_dataframe(vertex_df, list_cols=[LVL2_ID_COLUMN]),
             new_seen_lvl2_ids,
             message_text,
             message_color,
             False,
             disable_compartments,
             disable_compartments,
-            lvl2_message,
         )
 
     @app.callback(
@@ -258,6 +266,27 @@ def register_callbacks(app):
         return not value
 
     @app.callback(
+        Output("split-point-input", "disabled"),
+        Output("split-point-input", "value"),
+        Output("split-point-input", "error"),
+        Input("split-point-select", "value"),
+        Input("split-point-input", "value"),
+    )
+    def toggle_split_point_input(split_value, input_value):
+        error_value = None
+        if input_value is not None or input_value != "":
+            try:
+                pt = [float(x) for x in input_value.split(",")]
+                if len(pt) != 3:
+                    error_value = "Use 3 comma-separated numbers"
+            except:
+                error_value = "Use 3 comma-separated numbers"
+
+        if split_value == "no-split":
+            return True, "", None
+        return False, input_value, error_value
+
+    @app.callback(
         Output("datetime-debug-message", "children"),
         State("restriction-datetime", "value"),
         Input("timezone-offset", "data"),
@@ -265,3 +294,29 @@ def register_callbacks(app):
     )
     def debug_datetime(value, offset):
         return f"Time: {convert_time_string_to_utc(value, offset)}"
+
+    @app.callback(
+        Output("clear-history-modal", "opened"),
+        Input("clear-history-modal-toggle", "n_clicks"),
+        Input("clear-history-confirm", "n_clicks"),
+        Input("clear-history-cancel", "n_clicks"),
+        State("clear-history-modal", "opened"),
+        prevent_initial_call=True,
+    )
+    def toggle_clear_history_modal(n_cl1, n_cl2, n_cl3, opened):
+        return not opened
+
+    @app.callback(
+        Output("seen-lvl2-ids", "data", allow_duplicate=True),
+        Input("clear-history-confirm", "n_clicks"),
+        prevent_initial_call=True,
+    )
+    def reset_seen_lvl2_ids(_):
+        return []
+
+    @app.callback(
+        Output("previously-unseen-message", "children"),
+        Input("seen-lvl2-ids", "data"),
+    )
+    def previously_seen_lvl2_ids(seen_lvl2_ids):
+        return f"{len(seen_lvl2_ids)} previously seen vertex ids"

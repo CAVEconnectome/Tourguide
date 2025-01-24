@@ -54,7 +54,12 @@ def layout(**kwargs):
         label="Predicted Compartment:",
         children=dmc.Stack(
             [
-                dmc.Radio("Whole Cell", mt="5px", value="all-cell"),
+                dmc.Radio(
+                    "Whole Cell",
+                    mt="5px",
+                    value="all-cell",
+                    id="radio-all-cell",
+                ),
                 dmc.Radio(
                     "Axon Only",
                     id="radio-axon",
@@ -69,7 +74,6 @@ def layout(**kwargs):
                 ),
             ]
         ),
-        deselectable=True,
         value="all-cell",
         mb=10,
         size="sm",
@@ -98,31 +102,46 @@ def layout(**kwargs):
     new_point_selector = dmc.Stack(
         [
             dmc.Checkbox(
-                "Only previously unseen points in browser session",
+                "Only show points not previously seen during browser session",
                 mt="10px",
                 id="new-point-checkbox",
             ),
-            dmc.Text(
-                children="No existing points in session",
-                id="previously-unseen-message",
-                fs="xs",
-                c="gray",
+            dmc.Space(h=5),
+            dmc.Center(
+                dmc.Button(
+                    "Reset Unseen Points",
+                    id="clear-history-modal-toggle",
+                    color="red",
+                    size="xs",
+                    variant="outline",
+                    w="50%",
+                    justify="center",
+                )
             ),
             dmc.Modal(
-                title="Clear Unseen Points",
-                color="gray",
                 id="clear-history-modal",
                 children=[
+                    dmc.Title("Reset Unseen Points", order=4),
+                    dmc.Space(h=4),
                     dmc.Text(
-                        "Are you sure you want to clear your history of seen points? Points will clear automatically on browser quitting."
+                        "Are you sure you want to clear your history of seen points?"
+                    ),
+                    dmc.Space(h=4),
+                    dmc.Text(id="previously-unseen-message", c="gray"),
+                    dmc.Text(
+                        f"Points will clear automatically on browser quitting.",
+                        c="gray",
+                        fs="xs",
                     ),
                     dmc.Space(h=20),
                     dmc.Group(
                         [
-                            dmc.Button("Clear History", id="clear-history-button"),
+                            dmc.Button(
+                                "Clear History", color="red", id="clear-history-confirm"
+                            ),
                             dmc.Button(
                                 "Cancel",
-                                color="red",
+                                color="gray",
                                 id="clear-history-cancel",
                                 variant="outline",
                             ),
@@ -137,14 +156,14 @@ def layout(**kwargs):
     time_restriction = dmc.Stack(
         [
             dmc.Checkbox(
-                "Only points since...",
+                "Only points added to main object since...",
                 id="use-time-restriction",
                 checked=False,
                 mt="10px",
             ),
             dmc.DateTimePicker(
                 id="restriction-datetime",
-                label="Date and time",
+                label="Previous Timepoint:",
                 value=datetime.now(),
                 disabled=True,
             ),
