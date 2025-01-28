@@ -9,6 +9,13 @@ from datetime import datetime
 
 VERTEX_POINT = "pt"
 VERTEX_COLUMNS = [f"{VERTEX_POINT}_{suf}" for suf in ["x", "y", "z"]]
+PATH_VERTEX_A_POINT = "pointA"
+PATH_VERTEX_B_POINT = "pointB"
+PATH_VERTEX_COLUMNS = [
+    f"{pre}_{suf}"
+    for suf in ["x", "y", "z"]
+    for pre in [PATH_VERTEX_A_POINT, PATH_VERTEX_B_POINT]
+]
 BRANCH_GROUP_COLUMN = "branch_group"
 DISTANCE_COLUMN = "distance_to_root"
 IS_AXON_COLUMN = "is_axon"
@@ -81,11 +88,20 @@ def branch_group_label(nrn, cp_max_thresh=200_000):
     return new_lbls
 
 
+def _skeleton_from_vertex_df(vert_df: pd.DataFrame) -> skeleton.Skeleton:
+    return skeleton.Skeleton(
+        vertices=vert_df[VERTEX_COLUMNS].values,
+        edges=vert_df.query(f"{PARENT_COLUMN}!=-1")[PARENT_COLUMN].reset_index().values,
+        root=int(vert_df.query(ROOT_COLUMN).index[0]),
+    )
+
+
 def add_downstream_column(
     vert_df: pd.DataFrame,
     base_lvl2_id: int,
     downstream_column: str = "is_downstream",
     inclusive: bool = True,
+    sk=None,
 ) -> pd.DataFrame:
     """Add a boolean column to a vertex dataframe indicating if a vertex is upstream of the base vertex
 
@@ -111,11 +127,8 @@ def add_downstream_column(
     except:
         raise ValueError(f"Could not find vertex with level 2 id {base_lvl2_id}")
 
-    sk = skeleton.Skeleton(
-        vertices=vert_df[VERTEX_COLUMNS].values,
-        edges=vert_df.query(f"{PARENT_COLUMN}!=-1")[PARENT_COLUMN].reset_index().values,
-        root=int(vert_df.query(ROOT_COLUMN).index[0]),
-    )
+    if sk is None:
+        sk = _skeleton_from_vertex_df(vert_df)
 
     vert_df[downstream_column] = False
     vert_df.loc[
@@ -192,6 +205,7 @@ def filter_dataframe(
     only_after_timestamp: bool = False,
     horizon_timestamp: Optional[int] = None,
     client: Optional[caveclient.CAVEclient] = None,
+    return_filtered: bool = True,
 ):
     qry_str = []
     if compartment_filter == "axon":
@@ -231,7 +245,125 @@ def filter_dataframe(
             root_id, vertex_df, client, horizon_timestamp
         )
         qry_str.append(f"{NEW_TIMESTAMP_COLUMN} == True")
-    if len(qry_str) == 0:
+    if len(qry_str) == 0 or not return_filtered:
         return vertex_df
     else:
         return vertex_df.query(" and ".join(qry_str))
+
+
+def _make_skeleton_filter(
+    root_id: int,
+    sk: skeleton.Skeleton,
+    vertex_df: pd.DataFrame,
+    compartment_filter: Literal["axon", "dendrite", "all"] = None,
+    restriction_direction: Optional[Literal["downstream-of", "upstream-of"]] = None,
+    restriction_point: Optional[list] = None,
+    only_new_lvl2: bool = False,
+    only_after_timestamp: bool = False,
+    horizon_timestamp: Optional[int] = None,
+    client: Optional[caveclient.CAVEclient] = None,
+) -> tuple:
+    vertex_df = filter_dataframe(
+        root_id,
+        vertex_df,
+        compartment_filter=compartment_filter,
+        restriction_direction=restriction_direction,
+        restriction_point=restriction_point,
+        only_new_lvl2=only_new_lvl2,
+        only_after_timestamp=only_after_timestamp,
+        horizon_timestamp=horizon_timestamp,
+        client=client,
+        return_filtered=False,
+    )
+
+    mask = np.ones(len(sk.vertices), dtype=bool)
+    if compartment_filter == "axon":
+        mask &= vertex_df[IS_AXON_COLUMN].values
+    elif compartment_filter == "dendrite":
+        mask &= ~vertex_df[IS_AXON_COLUMN].values
+    if restriction_direction in RESTRICT_OPTIONS and restriction_point is not None:
+        if restriction_direction == "upstream-of":
+            mask &= ~vertex_df["is_downstream"].values
+        elif restriction_direction == "downstream-of":
+            mask &= vertex_df["is_downstream"].values
+    if only_new_lvl2:
+        mask &= vertex_df[NEW_POINT_COLUMN].values
+    if only_after_timestamp:
+        mask &= vertex_df[NEW_TIMESTAMP_COLUMN].values
+    return mask
+
+
+def _interpolate_path(
+    path,
+    sk,
+    step_size,
+):
+    path = path[::-1]
+    if step_size is None:
+        return sk.vertices[path]
+    ds = sk.distance_to_root[path]
+    ds_interp = np.linspace(
+        ds[0],
+        ds[-1],
+        np.round((ds[-1] - ds[0]) / step_size).astype(int),
+    )
+    return (
+        np.vstack(
+            [
+                np.interp(ds_interp, ds, sk.vertices[path, 0]),
+                np.interp(ds_interp, ds, sk.vertices[path, 1]),
+                np.interp(ds_interp, ds, sk.vertices[path, 2]),
+            ],
+        ).T,
+    )
+
+
+def process_paths(
+    root_id: int,
+    vertex_df: pd.DataFrame,
+    compartment_filter: Literal["axon", "dendrite", "all"] = None,
+    restriction_direction: Optional[Literal["downstream-of", "upstream-of"]] = None,
+    restriction_point: Optional[list] = None,
+    only_new_lvl2: bool = False,
+    only_after_timestamp: bool = False,
+    horizon_timestamp: Optional[int] = None,
+    step_size: Optional[int] = None,
+    client: Optional[caveclient.CAVEclient] = None,
+    return_l2_ids: bool = False,
+):
+    sk = _skeleton_from_vertex_df(vertex_df)
+    mask = _make_skeleton_filter(
+        root_id,
+        sk,
+        vertex_df,
+        compartment_filter=compartment_filter,
+        restriction_direction=restriction_direction,
+        restriction_point=restriction_point,
+        only_new_lvl2=only_new_lvl2,
+        only_after_timestamp=only_after_timestamp,
+        horizon_timestamp=horizon_timestamp,
+        client=client,
+    )
+
+    skm = sk.apply_mask(mask)
+    paths = skm.cover_paths_with_parent()
+    interp_paths = np.vstack(
+        [
+            np.vstack(
+                [
+                    _interpolate_path(path, skm, step_size),
+                    np.array([np.nan, np.nan, np.nan]).reshape((1, 3)),
+                ]
+            )
+            for path in paths
+        ]
+    )
+    path_df = pd.DataFrame(
+        np.concatenate([interp_paths[:-1], interp_paths[1:]], axis=1),
+        columns=PATH_VERTEX_COLUMNS,
+    ).dropna(axis=0)
+
+    if return_l2_ids:
+        return path_df, vertex_df[mask][LVL2_ID_COLUMN].explode().values()
+    else:
+        return path_df

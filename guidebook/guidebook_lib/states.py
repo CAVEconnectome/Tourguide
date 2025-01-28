@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 import nglui
 import numpy as np
 import pandas as pd
@@ -74,7 +74,6 @@ def _make_point_link(
         layers=point_link_layers,
         resolution=client.info.viewer_resolution(),
         use_skeleton_service=use_skeleton_service,
-        datastack_name=client.datastack_name,
         split_positions=True,
         root_ids=[root_id],
         view_kws={"zoom_3d": DEFAULT_ZOOM},
@@ -149,10 +148,28 @@ def branch_end_point_link(
     )
 
 
+def _make_point_annotation_layer(
+    layer_name: str,
+    color: Union[tuple, str],
+    split_positions: bool,
+):
+    return (
+        nglui.statebuilder.AnnotationLayerConfig(
+            layer_name,
+            color=color,
+            mapping_rules=nglui.statebuilder.PointMapper(
+                processing.VERTEX_POINT,
+                mapping_set=layer_name,
+                split_positions=split_positions,
+            ),
+            data_resolution=[1, 1, 1],
+        ),
+    )
+
+
 def make_point_statebuilder(
     layers: list,
     resolution: list,
-    datastack_name: str,
     use_skeleton_service: bool,
     split_positions: bool,
     client: caveclient.CAVEclient,
@@ -166,28 +183,19 @@ def make_point_statebuilder(
     annos = []
     for l in layers:
         annos.append(
-            nglui.statebuilder.AnnotationLayerConfig(
-                l,
+            _make_point_annotation_layer(
+                layer_name=l,
                 color=layer_colors.get(l),
-                mapping_rules=nglui.statebuilder.PointMapper(
-                    processing.VERTEX_POINT,
-                    mapping_set=l,
-                    split_positions=split_positions,
-                ),
-                data_resolution=[1, 1, 1],
-            ),
+                split_positions=split_positions,
+            )
         )
     return nglui.statebuilder.StateBuilder(
         [img, seg] + annos,
         view_kws=view_kws,
-        config_key=datastack_name,
+        config_key=client.datastack_name,
         resolution=resolution,
         client=client,
     )
-
-
-def make_path_statebuilder():
-    pass
 
 
 def make_point_link(
@@ -197,6 +205,52 @@ def make_point_link(
     return point_statebuilder.render_state(
         point_dfs,
         return_as="short",
+    )
+
+
+def _path_annotation_layer(
+    layer_name: str,
+    color: str,
+    split_positions: bool,
+    pointA="pointA",
+    pointB="pointB",
+):
+    return nglui.statebuilder.AnnotationLayerConfig(
+        layer_name,
+        color=color,
+        mapping_rules=nglui.statebuilder.LineMapper(
+            point_column_a=pointA,
+            point_column_b=pointB,
+            mapping_set=layer_name,
+            split_positions=split_positions,
+        ),
+        data_resolution=[1, 1, 1],
+    )
+
+
+def make_path_statebuilder(
+    color: Union[tuple, str],
+    resolution: list,
+    use_skeleton_service: bool,
+    split_positions: bool,
+    client: caveclient.CAVEclient,
+    root_ids: list = [],
+    view_kws: dict = {},
+):
+    img, seg = base_layers(
+        client, use_skeleton_service=use_skeleton_service, root_ids=root_ids
+    )
+    path_anno = _path_annotation_layer(
+        layer_name="cover-path",
+        color=color,
+        split_positions=split_positions,
+    )
+    return nglui.statebuilder.StateBuilder(
+        [img, seg, path_anno],
+        view_kws=view_kws,
+        config_key=client.datastack_name,
+        resolution=resolution,
+        client=client,
     )
 
 
