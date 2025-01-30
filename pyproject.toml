@@ -20,7 +20,7 @@ dependencies = [
     "flask>=3.1.0",
     "meshparty>=1.18.0",
     "middle-auth-client>=3.18.1",
-    "nglui>=3.7.2",
+    "nglui>=3.8.0",
     "numpy>=2.0.2",
     "orjson>=3.10.14",
     "pandas>=2.2.3",
@@ -42,6 +42,10 @@ dev = [
     "ipykernel",
     "bump-my-version",
 ]
+profile = [
+    "scalene",
+    "pyinstrument",
+]
 docs = [
     "mkdocs",
     "mkdocs-material",
@@ -52,7 +56,7 @@ lint = [
 ]
 
 [tool.uv]
-default-groups = ["dev", "docs", "lint"]
+default-groups = ["dev", "docs", "lint", "profile"]
 
 [tool.bumpversion]
 current_version = "0.0.1"
@@ -100,3 +104,12 @@ help = "Run pytest with code coverage."
 [tool.poe.tasks.doc-preview]
 cmd = "uv run mkdocs serve"
 help = "Preview documentation build locally"
+
+[tool.poe.tasks.profile]
+cmd = "uv run scalene"
+help = "Profile the project with scalene"
+
+[tool.poe.tasks.profile-lite]
+cmd = "uv run scalene --cli --reduced-profile"
+help = "Profile the project with scalene in reduced and inline mode"
+

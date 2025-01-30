@@ -19,6 +19,9 @@ LAYER_COLORS = {
     "branch_points": "OrangeRed",
 }
 
+RESTRICTED_SEGMENTATION_LAYER = "restricted-segmentation"
+COVER_PATH_LAYER = "cover-path"
+
 
 def set_default_ngl_configuration(
     datastack_name: str,
@@ -236,17 +239,30 @@ def make_path_statebuilder(
     client: caveclient.CAVEclient,
     root_ids: list = [],
     view_kws: dict = {},
+    add_restricted_segmentation_layer: bool = False,
+    restricted_color: Optional[Union[tuple, str]] = None,
 ):
     img, seg = base_layers(
         client, use_skeleton_service=use_skeleton_service, root_ids=root_ids
     )
     path_anno = _path_annotation_layer(
-        layer_name="cover-path",
+        layer_name=COVER_PATH_LAYER,
         color=color,
         split_positions=split_positions,
     )
+    layers = [img, seg, path_anno]
+    if restricted_color is None:
+        restricted_color = color
+    if add_restricted_segmentation_layer:
+        layers.append(
+            make_restricted_segmentation_layer(
+                layer_name=RESTRICTED_SEGMENTATION_LAYER,
+                client=client,
+                color=restricted_color,
+            )
+        )
     return nglui.statebuilder.StateBuilder(
-        [img, seg, path_anno],
+        layers,
         view_kws=view_kws,
         config_key=client.datastack_name,
         resolution=resolution,
@@ -254,5 +270,54 @@ def make_path_statebuilder(
     )
 
 
-def make_path_link():
-    pass
+def make_restricted_segmentation_layer(
+    layer_name: str,
+    client: caveclient.CAVEclient,
+    color: Optional[Union[tuple, str]] = None,
+):
+    if color is None:
+        color = "white"
+    return nglui.statebuilder.SegmentationLayerConfig(
+        client.info.segmentation_source(),
+        name=layer_name,
+        selected_ids_column="selected_id",
+        mapping_set=RESTRICTED_SEGMENTATION_LAYER,
+        color_column="color",
+        alpha_selected=0,
+        alpha_3d=0.3,
+        selectable=False,
+    )
+
+
+def make_path_link(
+    path_df: pd.DataFrame,
+    path_statebuilder: nglui.statebuilder.StateBuilder,
+) -> str:
+    return path_statebuilder.render_state(
+        path_df,
+        return_as="short",
+    )
+
+
+def package_path_data(
+    path_df: Optional[pd.DataFrame] = None,
+    lvl2_ids: Optional[list] = None,
+    mesh_only: bool = False,
+    mesh_color: Optional[Union[tuple, str]] = None,
+    client: Optional[caveclient.CAVEclient] = None,
+):
+    if mesh_only:
+        data_package = {}
+    else:
+        data_package = {COVER_PATH_LAYER: path_df}
+    if lvl2_ids is not None and client is not None:
+        min_cover_ids = client.chunkedgraph.get_minimal_covering_nodes(lvl2_ids)
+        if mesh_color is None:
+            mesh_color = "white"
+        data_package[RESTRICTED_SEGMENTATION_LAYER] = pd.DataFrame(
+            {
+                "selected_id": min_cover_ids,
+                "color": mesh_color,
+            }
+        )
+    return data_package

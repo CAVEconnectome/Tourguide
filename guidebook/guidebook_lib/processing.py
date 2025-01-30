@@ -13,8 +13,8 @@ PATH_VERTEX_A_POINT = "pointA"
 PATH_VERTEX_B_POINT = "pointB"
 PATH_VERTEX_COLUMNS = [
     f"{pre}_{suf}"
-    for suf in ["x", "y", "z"]
     for pre in [PATH_VERTEX_A_POINT, PATH_VERTEX_B_POINT]
+    for suf in ["x", "y", "z"]
 ]
 BRANCH_GROUP_COLUMN = "branch_group"
 DISTANCE_COLUMN = "distance_to_root"
@@ -307,15 +307,13 @@ def _interpolate_path(
         ds[-1],
         np.round((ds[-1] - ds[0]) / step_size).astype(int),
     )
-    return (
-        np.vstack(
-            [
-                np.interp(ds_interp, ds, sk.vertices[path, 0]),
-                np.interp(ds_interp, ds, sk.vertices[path, 1]),
-                np.interp(ds_interp, ds, sk.vertices[path, 2]),
-            ],
-        ).T,
-    )
+    return np.vstack(
+        [
+            np.interp(ds_interp, ds, sk.vertices[path, 0]),
+            np.interp(ds_interp, ds, sk.vertices[path, 1]),
+            np.interp(ds_interp, ds, sk.vertices[path, 2]),
+        ],
+    ).T
 
 
 def process_paths(
@@ -329,6 +327,7 @@ def process_paths(
     horizon_timestamp: Optional[int] = None,
     step_size: Optional[int] = None,
     client: Optional[caveclient.CAVEclient] = None,
+    min_path_length: Optional[float] = None,
     return_l2_ids: bool = False,
 ):
     sk = _skeleton_from_vertex_df(vertex_df)
@@ -347,23 +346,43 @@ def process_paths(
 
     skm = sk.apply_mask(mask)
     paths = skm.cover_paths_with_parent()
-    interp_paths = np.vstack(
-        [
-            np.vstack(
-                [
-                    _interpolate_path(path, skm, step_size),
-                    np.array([np.nan, np.nan, np.nan]).reshape((1, 3)),
-                ]
-            )
-            for path in paths
-        ]
-    )
+    path_length = np.array(skm.path_length(paths))
+    if min_path_length is None:
+        min_path_length = 0
+
+    if step_size:
+        interp_paths = np.vstack(
+            [
+                np.vstack(
+                    [
+                        _interpolate_path(path, skm, step_size),
+                        np.array([np.nan, np.nan, np.nan]).reshape((1, 3)),
+                    ]
+                )
+                for path, pl in zip(paths, path_length)
+                if pl > min_path_length
+            ]
+        )
+    else:
+        interp_paths = np.vstack(
+            [
+                np.vstack(
+                    [
+                        skm.vertices[path],
+                        np.array([np.nan, np.nan, np.nan]).reshape((1, 3)),
+                    ]
+                )
+                for path, pl in zip(paths, path_length)
+                if pl > min_path_length
+            ]
+        )
+
     path_df = pd.DataFrame(
         np.concatenate([interp_paths[:-1], interp_paths[1:]], axis=1),
         columns=PATH_VERTEX_COLUMNS,
     ).dropna(axis=0)
 
     if return_l2_ids:
-        return path_df, vertex_df[mask][LVL2_ID_COLUMN].explode().values()
+        return path_df, vertex_df[mask][LVL2_ID_COLUMN].explode().values
     else:
         return path_df
