@@ -257,7 +257,64 @@ def layout(**kwargs):
         fluid=True,
     )
 
-    path_links = dmc.Container("path links")
+    path_links = dmc.Container(
+        dmc.Grid(
+            [
+                dmc.GridCol(
+                    dmc.Stack(
+                        [
+                            dmc.Checkbox(
+                                "Ignore short paths (<5 µm)",
+                                id="ignore-short-paths",
+                                checked=False,
+                            ),
+                            dmc.Checkbox(
+                                "Show mesh subset of path",
+                                id="show-mesh-subset",
+                                checked=False,
+                            ),
+                            dmc.Checkbox(
+                                "Hide path",
+                                id="hide-path",
+                                checked=False,
+                                disabled=True,
+                            ),
+                            dmc.Checkbox(
+                                "Resample paths",
+                                id="smooth-paths-checkbox",
+                                checked=True,
+                            ),
+                            dmc.NumberInput(
+                                id="smooth-paths-input",
+                                label="Resample distance (µm)",
+                                value=3,
+                                allowNegative=False,
+                                allowDecimal=False,
+                                min=1,
+                                max=10,
+                                step=1,
+                                disabled=False,
+                            ),
+                            dmc.Space(h=10),
+                            html.Div(
+                                children=link_maker_button(
+                                    "Generate Path Link",
+                                    button_id="path-link-button",
+                                    disabled=True,
+                                ),
+                                id="path-link-card",
+                            ),
+                        ],
+                        align="flex-start",
+                    ),
+                    span=4,
+                ),
+                dmc.GridCol(
+                    span=4,
+                ),
+            ]
+        )
+    )
 
     output_tabs = dmc.Tabs(
         [

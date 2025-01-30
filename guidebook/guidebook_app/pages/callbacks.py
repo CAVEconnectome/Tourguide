@@ -14,6 +14,7 @@ from ...guidebook_lib.processing import (
     process_meshwork_to_dataframe,
     filter_dataframe,
     process_new_points,
+    process_paths,
     VERTEX_COLUMNS,
     END_POINT_COLUMN,
     BRANCH_GROUP_COLUMN,
@@ -37,6 +38,8 @@ RESET_LINK_TRIGGERS = [
     "split-point-select",
     "compartment-radio",
 ]
+
+SHORT_PATH_LENGTH = 5_000
 
 
 def get_datastack(pathname):
@@ -80,6 +83,12 @@ def link_process_generic(
     only_new_lvl2,
     only_after_timestamp,
     horizon_timestamp,
+    is_path=False,
+    ignore_short_paths=None,
+    show_mesh_subset=None,
+    hide_path=None,
+    smooth_paths=None,
+    smooth_paths_distance=None,
 ):
     # Not having good data should also reset the links
     if root_id is None or root_id == "" or vertex_data is None or vertex_data == []:
@@ -107,30 +116,82 @@ def link_process_generic(
     except:
         restriction_point = None
 
-    vertex_df = filter_dataframe(
-        root_id=int(root_id),
-        vertex_df=rehydrate_dataframe(vertex_data, list_columns=[LVL2_ID_COLUMN]),
-        compartment_filter=compartment_filter,
-        restriction_direction=point_filter,
-        restriction_point=restriction_point,
-        only_new_lvl2=only_new_lvl2,
-        only_after_timestamp=only_after_timestamp,
-        horizon_timestamp=horizon_timestamp,
-        client=client,
-    )
-    if sum(vertex_df[END_POINT_COLUMN]) == 0:
-        return link_maker_button(
-            f"No Matching {point_name}s",
-            button_id=button_id,
-            disabled=True,
+    if not is_path:
+        vertex_df = filter_dataframe(
+            root_id=int(root_id),
+            vertex_df=rehydrate_dataframe(vertex_data, list_columns=[LVL2_ID_COLUMN]),
+            compartment_filter=compartment_filter,
+            restriction_direction=point_filter,
+            restriction_point=restriction_point,
+            only_new_lvl2=only_new_lvl2,
+            only_after_timestamp=only_after_timestamp,
+            horizon_timestamp=horizon_timestamp,
+            client=client,
         )
+        if sum(vertex_df[END_POINT_COLUMN]) == 0:
+            return link_maker_button(
+                f"No Matching {point_name}s",
+                button_id=button_id,
+                disabled=True,
+            )
+        else:
+            url = url_function(int(root_id), vertex_df, client)
+            return link_maker_button(
+                f"{point_name} Link",
+                button_id=button_id,
+                url=url,
+            )
     else:
-        url = url_function(int(root_id), vertex_df, client)
-        return link_maker_button(
-            f"{point_name} Link",
-            button_id=button_id,
-            url=url,
+        if ignore_short_paths:
+            min_path_length = SHORT_PATH_LENGTH
+        else:
+            min_path_length = None
+        if smooth_paths:
+            step_size = smooth_paths_distance
+        else:
+            step_size = None
+        path_df, lvl2_ids = process_paths(
+            root_id=int(root_id),
+            vertex_df=vertex_df,
+            client=client,
+            compartment_filter=compartment_filter,
+            restriction_direction=point_filter,
+            restriction_point=restriction_point,
+            only_new_lvl2=only_new_lvl2,
+            only_after_timestamp=only_after_timestamp,
+            horizon_timestamp=horizon_timestamp,
+            min_path_length=min_path_length,
+            return_l2_ids=show_mesh_subset,
+            step_size=step_size,
         )
+        sb_data = states.package_path_data(
+            path_df,
+            lvl2_ids,
+            mesh_only=hide_path,
+            client=client,
+        )
+        if len(vertex_df) == 0:
+            return link_maker_button(
+                f"No Matching {point_name}s",
+                button_id=button_id,
+                disabled=True,
+            )
+        else:
+            sb = states.make_path_statebuilder(
+                color="white",
+                use_skeleton_service=True,
+                split_positions=True,
+                client=client,
+                root_ids=[int(root_id)],
+                add_restricted_segmentation_layer=show_mesh_subset,
+                restricted_color="white",
+            )
+            url = url_function(sb_data, sb, client)
+            return link_maker_button(
+                f"{point_name} Link",
+                button_id=button_id,
+                url=url,
+            )
 
 
 def register_callbacks(app):
@@ -166,7 +227,8 @@ def register_callbacks(app):
         Output("message-text", "color"),
         Output("end-point-link-button", "disabled"),
         Output("branch-point-link-button", "disabled"),
-        Output("branch-end-point-link-button", "disabled"),
+        Output("branch-end-point-link-button", "disabled", allow_duplicate=True),
+        Output("path-link-button", "disabled"),
         Output("radio-axon", "disabled"),
         Output("radio-dendrite", "disabled"),
         Output("url", "search"),
@@ -189,6 +251,7 @@ def register_callbacks(app):
                 seen_lvl2_ids,
                 "Please provide a Root ID",
                 "yellow",
+                True,
                 True,
                 True,
                 True,
@@ -222,6 +285,7 @@ def register_callbacks(app):
                 True,
                 True,
                 True,
+                True,
                 url_query_from_root_id(root_id),
             )
 
@@ -238,6 +302,7 @@ def register_callbacks(app):
             new_seen_lvl2_ids,
             message_text,
             message_color,
+            False,
             False,
             False,
             False,
@@ -476,3 +541,92 @@ def register_callbacks(app):
             > datetime.now(timezone.utc).timestamp()
         ):
             return "Time selected is in the future"
+
+    @app.callback(
+        Output("hide-path", "checked"),
+        Output("hide-path", "disabled"),
+        Input("show-mesh-subset", "checked"),
+    )
+    def toggle_hide_path(value):
+        if value:
+            return False, False
+        else:
+            return False, True
+
+    @app.callback(
+        Output("smooth-paths-input", "disabled"),
+        Input("smooth-paths-checkbox", "checked"),
+    )
+    def toggle_smooth_path(value):
+        return not value
+
+    @app.callback(
+        Output("path-link-card", "children"),
+        State("curr-root-id", "data"),
+        State("vertex-df", "data"),
+        State("url", "pathname"),
+        Input("compartment-radio", "value"),
+        Input("split-point-select", "value"),
+        Input("split-point-input", "value"),
+        Input("new-point-checkbox", "checked"),
+        Input("use-time-restriction", "checked"),
+        Input("restriction-datetime", "value"),
+        Input("timezone-offset", "data"),
+        Input("ignore-short_paths", "checked"),
+        Input("show-mesh-subset", "checked"),
+        Input("hide-path", "checked"),
+        Input("smooth-paths-checkbox", "checked"),
+        Input("smooth-paths-input", "value"),
+        Input("path-link-button", "n_clicks"),
+        prevent_initial_call=True,
+        running=[(Output("path-link-button", "loading"), True, False)],
+    )
+    def generate_path_link(
+        root_id,
+        vertex_data,
+        url_path,
+        compartment_filter,
+        point_filter,
+        restriction_point,
+        only_new_lvl2,
+        use_time_restriction,
+        restriction_datetime,
+        utc_offset,
+        ignore_short_paths,
+        show_mesh_subset,
+        hide_path,
+        smooth_paths,
+        smooth_paths_distance,
+        _,
+    ):
+        point_name = "Path"
+        button_id = "path-link-button"
+        default_button = (
+            link_maker_button(
+                f"Generate {point_name} Link",
+                button_id=button_id,
+            ),
+        )
+
+        return link_process_generic(
+            point_name,
+            button_id,
+            states.make_path_link,
+            default_button,
+            ctx.triggered_id,
+            root_id,
+            vertex_data,
+            url_path,
+            compartment_filter,
+            point_filter,
+            restriction_point,
+            only_new_lvl2,
+            use_time_restriction,
+            convert_time_string_to_utc(restriction_datetime, utc_offset),
+            is_path=True,
+            ignore_short_paths=ignore_short_paths,
+            show_mesh_subset=show_mesh_subset,
+            hide_path=hide_path,
+            smooth_paths=smooth_paths,
+            smooth_paths_distance=smooth_paths_distance,
+        )

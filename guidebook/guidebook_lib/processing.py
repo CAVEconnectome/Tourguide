@@ -385,4 +385,4 @@ def process_paths(
     if return_l2_ids:
         return path_df, vertex_df[mask][LVL2_ID_COLUMN].explode().values
     else:
-        return path_df
+        return path_df, None

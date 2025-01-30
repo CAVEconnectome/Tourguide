@@ -233,7 +233,6 @@ def _path_annotation_layer(
 
 def make_path_statebuilder(
     color: Union[tuple, str],
-    resolution: list,
     use_skeleton_service: bool,
     split_positions: bool,
     client: caveclient.CAVEclient,
@@ -242,9 +241,12 @@ def make_path_statebuilder(
     add_restricted_segmentation_layer: bool = False,
     restricted_color: Optional[Union[tuple, str]] = None,
 ):
-    img, seg = base_layers(
-        client, use_skeleton_service=use_skeleton_service, root_ids=root_ids
-    )
+    if add_restricted_segmentation_layer:
+        img, seg = base_layers(client, use_skeleton_service=use_skeleton_service)
+    else:
+        img, seg = base_layers(
+            client, use_skeleton_service=use_skeleton_service, root_ids=root_ids
+        )
     path_anno = _path_annotation_layer(
         layer_name=COVER_PATH_LAYER,
         color=color,
@@ -265,7 +267,7 @@ def make_path_statebuilder(
         layers,
         view_kws=view_kws,
         config_key=client.datastack_name,
-        resolution=resolution,
+        resolution=client.info.viewer_resolution(),
         client=client,
     )
 
@@ -292,10 +294,10 @@ def make_restricted_segmentation_layer(
 def make_path_link(
     path_df: pd.DataFrame,
     path_statebuilder: nglui.statebuilder.StateBuilder,
+    client: caveclient.CAVEclient,
 ) -> str:
     return path_statebuilder.render_state(
-        path_df,
-        return_as="short",
+        path_df, return_as="short", config_key=client.datastack_name
     )
 
 
