@@ -7,6 +7,13 @@ import caveclient
 from pcg_skel import chunk_tools
 from datetime import datetime
 
+import logging
+import os
+
+if os.environ.get("GUIDEBOOK_VERBOSE_LOG", "false") == "true":
+    logging.getLogger().setLevel(logging.INFO)
+
+
 VERTEX_POINT = "pt"
 VERTEX_COLUMNS = [f"{VERTEX_POINT}_{suf}" for suf in ["x", "y", "z"]]
 PATH_VERTEX_A_POINT = "pointA"
@@ -60,7 +67,9 @@ def process_meshwork_to_dataframe(
 
     vert_df[ROOT_COLUMN] = False
     vert_df.loc[int(nrn.skeleton.root), ROOT_COLUMN] = True
-
+    logging.info(
+        f"Processed meshwork to dataframe with root at {int(nrn.skeleton.root)}"
+    )
     return vert_df
 
 
@@ -351,11 +360,12 @@ def process_paths(
         min_path_length = 0
 
     if step_size:
+        step_size_nm = 1000 * step_size
         interp_paths = np.vstack(
             [
                 np.vstack(
                     [
-                        _interpolate_path(path, skm, step_size),
+                        _interpolate_path(path, skm, step_size_nm),
                         np.array([np.nan, np.nan, np.nan]).reshape((1, 3)),
                     ]
                 )
@@ -381,7 +391,6 @@ def process_paths(
         np.concatenate([interp_paths[:-1], interp_paths[1:]], axis=1),
         columns=PATH_VERTEX_COLUMNS,
     ).dropna(axis=0)
-
     if return_l2_ids:
         return path_df, vertex_df[mask][LVL2_ID_COLUMN].explode().values
     else:

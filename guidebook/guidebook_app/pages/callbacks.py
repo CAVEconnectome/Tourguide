@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 import flask
 from dash import html, dcc, callback, Input, Output, State, ctx
@@ -28,6 +29,12 @@ import os
 from urllib.parse import parse_qs, urlparse, urlencode
 from datetime import datetime, timezone
 
+
+import logging
+
+if os.environ.get("GUIDEBOOK_VERBOSE_LOG") == "true":
+    logging.getLogger().setLevel(logging.INFO)
+
 VERTEX_LIST_COLS = ["lvl2_id"]
 
 RESET_LINK_TRIGGERS = [
@@ -37,6 +44,11 @@ RESET_LINK_TRIGGERS = [
     "split-point-input",
     "split-point-select",
     "compartment-radio",
+    "show-mesh-subset",
+    "hide-path",
+    "ignore-short-paths",
+    "smooth-paths-input",
+    "smooth-paths-checkbox",
 ]
 
 SHORT_PATH_LENGTH = 5_000
@@ -115,8 +127,9 @@ def link_process_generic(
         restriction_point = lib_utils.process_point_string(restriction_point)
     except:
         restriction_point = None
-
+    logging.info(f"\tRestriction Point: {restriction_point}")
     if not is_path:
+        logging.info(f"Working on point links")
         vertex_df = filter_dataframe(
             root_id=int(root_id),
             vertex_df=rehydrate_dataframe(vertex_data, list_columns=[LVL2_ID_COLUMN]),
@@ -128,6 +141,8 @@ def link_process_generic(
             horizon_timestamp=horizon_timestamp,
             client=client,
         )
+        logging.info(f"vertex_df: {len(vertex_df)} points")
+
         if sum(vertex_df[END_POINT_COLUMN]) == 0:
             return link_maker_button(
                 f"No Matching {point_name}s",
@@ -136,6 +151,7 @@ def link_process_generic(
             )
         else:
             url = url_function(int(root_id), vertex_df, client)
+            logging.info(f"Generating button with url: {url}")
             return link_maker_button(
                 f"{point_name} Link",
                 button_id=button_id,
@@ -146,10 +162,13 @@ def link_process_generic(
             min_path_length = SHORT_PATH_LENGTH
         else:
             min_path_length = None
+        logging.info(f"\tSmooth Paths: {smooth_paths}")
         if smooth_paths:
             step_size = smooth_paths_distance
         else:
             step_size = None
+        logging.info(f"\tStep Size: {step_size}")
+        vertex_df = rehydrate_dataframe(vertex_data, list_columns=[LVL2_ID_COLUMN])
         path_df, lvl2_ids = process_paths(
             root_id=int(root_id),
             vertex_df=vertex_df,
@@ -164,12 +183,18 @@ def link_process_generic(
             return_l2_ids=show_mesh_subset,
             step_size=step_size,
         )
+        if show_mesh_subset:
+            logging.info(f"\tpath df: {len(path_df)}. lvl2_ids: {len(lvl2_ids)}")
+        else:
+            logging.info(f"\tpath df: {len(path_df)}, lvl2_ids: None")
         sb_data = states.package_path_data(
             path_df,
             lvl2_ids,
             mesh_only=hide_path,
             client=client,
         )
+
+        logging.info(f"\tMade sb_data: {{k: len(v) for k, v in sb_data.items()}}")
         if len(vertex_df) == 0:
             return link_maker_button(
                 f"No Matching {point_name}s",
@@ -177,6 +202,7 @@ def link_process_generic(
                 disabled=True,
             )
         else:
+            logging.info(f"Making statebuilder for paths")
             sb = states.make_path_statebuilder(
                 color="white",
                 use_skeleton_service=True,
@@ -187,6 +213,7 @@ def link_process_generic(
                 restricted_color="white",
             )
             url = url_function(sb_data, sb, client)
+            logging.info(f"Generating button with url: {url}")
             return link_maker_button(
                 f"{point_name} Link",
                 button_id=button_id,
@@ -572,7 +599,7 @@ def register_callbacks(app):
         Input("use-time-restriction", "checked"),
         Input("restriction-datetime", "value"),
         Input("timezone-offset", "data"),
-        Input("ignore-short_paths", "checked"),
+        Input("ignore-short-paths", "checked"),
         Input("show-mesh-subset", "checked"),
         Input("hide-path", "checked"),
         Input("smooth-paths-checkbox", "checked"),
@@ -607,22 +634,25 @@ def register_callbacks(app):
                 button_id=button_id,
             ),
         )
-
+        logging.info(f"Generating path link for root ID {root_id}")
+        logging.info(f"Triggered by: {ctx.triggered_id}")
         return link_process_generic(
-            point_name,
-            button_id,
-            states.make_path_link,
-            default_button,
-            ctx.triggered_id,
-            root_id,
-            vertex_data,
-            url_path,
-            compartment_filter,
-            point_filter,
-            restriction_point,
-            only_new_lvl2,
-            use_time_restriction,
-            convert_time_string_to_utc(restriction_datetime, utc_offset),
+            point_name=point_name,
+            button_id=button_id,
+            url_function=states.make_path_link,
+            default_button=default_button,
+            trigger_id=ctx.triggered_id,
+            root_id=root_id,
+            vertex_data=vertex_data,
+            url_path=url_path,
+            compartment_filter=compartment_filter,
+            point_filter=point_filter,
+            restriction_point=restriction_point,
+            only_new_lvl2=only_new_lvl2,
+            only_after_timestamp=use_time_restriction,
+            horizon_timestamp=convert_time_string_to_utc(
+                restriction_datetime, utc_offset
+            ),
             is_path=True,
             ignore_short_paths=ignore_short_paths,
             show_mesh_subset=show_mesh_subset,

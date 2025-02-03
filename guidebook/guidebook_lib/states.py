@@ -156,17 +156,15 @@ def _make_point_annotation_layer(
     color: Union[tuple, str],
     split_positions: bool,
 ):
-    return (
-        nglui.statebuilder.AnnotationLayerConfig(
-            layer_name,
-            color=color,
-            mapping_rules=nglui.statebuilder.PointMapper(
-                processing.VERTEX_POINT,
-                mapping_set=layer_name,
-                split_positions=split_positions,
-            ),
-            data_resolution=[1, 1, 1],
+    return nglui.statebuilder.AnnotationLayerConfig(
+        layer_name,
+        color=color,
+        mapping_rules=nglui.statebuilder.PointMapper(
+            processing.VERTEX_POINT,
+            mapping_set=layer_name,
+            split_positions=split_positions,
         ),
+        data_resolution=[1, 1, 1],
     )
 
 
@@ -241,6 +239,8 @@ def make_path_statebuilder(
     add_restricted_segmentation_layer: bool = False,
     restricted_color: Optional[Union[tuple, str]] = None,
 ):
+    config_ngl(client)
+
     if add_restricted_segmentation_layer:
         img, seg = base_layers(client, use_skeleton_service=use_skeleton_service)
     else:
