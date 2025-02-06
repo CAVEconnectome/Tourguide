@@ -1,14 +1,14 @@
-import numpy as np
-from meshparty import meshwork, skeleton
-from typing import Literal, Optional
-import pandas as pd
-from scipy import sparse
-import caveclient
-from pcg_skel import chunk_tools
-from datetime import datetime
-
 import logging
 import os
+from datetime import datetime
+from typing import Literal, Optional
+
+import caveclient
+import numpy as np
+import pandas as pd
+from meshparty import meshwork, skeleton
+from pcg_skel import chunk_tools
+from scipy import sparse
 
 if os.environ.get("GUIDEBOOK_VERBOSE_LOG", "false") == "true":
     logging.getLogger().setLevel(logging.INFO)
@@ -79,7 +79,7 @@ def num_branch_points(nrn):
     n_bp = np.zeros(len(nrn.skeleton.vertices), dtype=int)
     bp = nrn.skeleton.branch_points
     for bp, ds_list in zip(bp, nrn.skeleton.downstream_nodes(bp)):
-        _bp[ds_list] = n_bp[ds_list] + 1
+        n_bp[ds_list] = n_bp[ds_list] + 1
     return n_bp
 
 
