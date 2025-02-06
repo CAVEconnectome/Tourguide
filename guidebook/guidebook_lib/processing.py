@@ -33,6 +33,7 @@ BRANCH_POINT_COLUMN = "is_branch"
 ROOT_COLUMN = "is_root"
 NEW_POINT_COLUMN = "is_new_point"
 NEW_TIMESTAMP_COLUMN = "not_in_previous_match"
+NUM_BRANCH_TO_ROOT_COLUMN = "num_bp_to_root"
 
 RESTRICT_OPTIONS = ["upstream-of", "downstream-of"]
 
@@ -56,6 +57,7 @@ def process_meshwork_to_dataframe(
             PARENT_COLUMN: nrn.skeleton.parent_nodes(nrn.skeleton_indices),
             DISTANCE_COLUMN: nrn.skeleton.distance_to_root,
             BRANCH_GROUP_COLUMN: branch_group_label(nrn),
+            NUM_BRANCH_TO_ROOT_COLUMN: num_branch_points(nrn),
             LVL2_ID_COLUMN: l2df.groupby("skind")[LVL2_ID_COLUMN].agg(list),
         }
     )
@@ -71,6 +73,16 @@ def process_meshwork_to_dataframe(
         f"Processed meshwork to dataframe with root at {int(nrn.skeleton.root)}"
     )
     return vert_df
+
+
+def num_branch_points(nrn):
+    n_bp = np.zeros(len(nrn.skeleton.vertices), dtype=int)
+    bp = nrn.skeleton.branch_points
+    for bp, ds_list in zip(bp, nrn.skeleton.downstream_nodes(bp)):
+        if bp == nrn.skeleton.root:
+            continue
+        n_bp[ds_list] = n_bp[ds_list] + 1
+    return n_bp
 
 
 def branch_group_label(nrn, cp_max_thresh=200_000):
@@ -213,6 +225,8 @@ def filter_dataframe(
     only_new_lvl2: bool = False,
     only_after_timestamp: bool = False,
     horizon_timestamp: Optional[int] = None,
+    max_branch_to_root: Optional[int] = None,
+    max_distance_to_root: Optional[int] = None,
     client: Optional[caveclient.CAVEclient] = None,
     return_filtered: bool = True,
 ):
@@ -221,6 +235,12 @@ def filter_dataframe(
         qry_str.append(f"{IS_AXON_COLUMN} == True")
     elif compartment_filter == "dendrite":
         qry_str.append(f"{IS_AXON_COLUMN} == False")
+
+    if max_branch_to_root is not None:
+        qry_str.append(f"{NUM_BRANCH_TO_ROOT_COLUMN} <= {max_branch_to_root}")
+
+    if max_distance_to_root is not None:
+        qry_str.append(f"{DISTANCE_COLUMN} <= {max_distance_to_root}")
 
     if restriction_direction in RESTRICT_OPTIONS and restriction_point is not None:
         split_lvl2_id = chunk_tools.get_closest_lvl2_chunk(
@@ -267,6 +287,8 @@ def _make_skeleton_filter(
     compartment_filter: Literal["axon", "dendrite", "all"] = None,
     restriction_direction: Optional[Literal["downstream-of", "upstream-of"]] = None,
     restriction_point: Optional[list] = None,
+    max_branch_to_root: Optional[int] = None,
+    max_distance_to_root: Optional[int] = None,
     only_new_lvl2: bool = False,
     only_after_timestamp: bool = False,
     horizon_timestamp: Optional[int] = None,
@@ -278,6 +300,8 @@ def _make_skeleton_filter(
         compartment_filter=compartment_filter,
         restriction_direction=restriction_direction,
         restriction_point=restriction_point,
+        max_branch_to_root=max_branch_to_root,
+        max_distance_to_root=max_distance_to_root,
         only_new_lvl2=only_new_lvl2,
         only_after_timestamp=only_after_timestamp,
         horizon_timestamp=horizon_timestamp,
@@ -331,6 +355,8 @@ def process_paths(
     compartment_filter: Literal["axon", "dendrite", "all"] = None,
     restriction_direction: Optional[Literal["downstream-of", "upstream-of"]] = None,
     restriction_point: Optional[list] = None,
+    max_branch_to_root: Optional[int] = None,
+    max_distance_to_root: Optional[int] = None,
     only_new_lvl2: bool = False,
     only_after_timestamp: bool = False,
     horizon_timestamp: Optional[int] = None,
@@ -347,6 +373,8 @@ def process_paths(
         compartment_filter=compartment_filter,
         restriction_direction=restriction_direction,
         restriction_point=restriction_point,
+        max_branch_to_root=max_branch_to_root,
+        max_distance_to_root=max_distance_to_root,
         only_new_lvl2=only_new_lvl2,
         only_after_timestamp=only_after_timestamp,
         horizon_timestamp=horizon_timestamp,

@@ -35,6 +35,17 @@ def layout(**kwargs):
                     children="Submit",
                     id="submit-button",
                     color="var(--mantine-color-indigo-7)",
+                    size="lg",
+                ),
+                span=1,
+            ),
+            dmc.GridCol(
+                dmc.Button(
+                    children="Update Root ID",
+                    id="update-id-button",
+                    color="var(--mantine-color-indigo-4)",
+                    size="sm",
+                    ml=50,
                 ),
                 span=1,
             ),
@@ -47,6 +58,7 @@ def layout(**kwargs):
         id="message-text",
         children="Please enter a root id and press Submit",
         color="violet",
+        mt=10,
     )
 
     compartment_radio = dmc.RadioGroup(
@@ -91,10 +103,35 @@ def layout(**kwargs):
                 ],
                 value="no-split",
                 mb=10,
+                allowDeselect=False,
             ),
             dmc.TextInput(
                 id="split-point-input",
                 description="Use standard neuroglancer coordinates for the dataset",
+            ),
+        ]
+    )
+
+    topo_restriction = dmc.Stack(
+        [
+            dmc.Select(
+                id="topo-restriction-select",
+                label="Restrict along arbor:",
+                data=[
+                    {"label": "None", "value": "no-split"},
+                    {"label": "By number of branch points", "value": "branch-topo"},
+                    {"label": "By distance from root (µm)", "value": "distance-topo"},
+                ],
+                value="no-split",
+                mb=10,
+                allowDeselect=False,
+            ),
+            dmc.NumberInput(
+                id="topo-restriction-input",
+                description="Number of branch points or distance in microns from root (e.g. soma)",
+                allowDecimal=False,
+                allowNegative=False,
+                min=1,
             ),
         ]
     )
@@ -114,7 +151,7 @@ def layout(**kwargs):
                     color="red",
                     size="xs",
                     variant="outline",
-                    w="50%",
+                    fullWidth=True,
                     justify="center",
                 )
             ),
@@ -170,167 +207,197 @@ def layout(**kwargs):
         ]
     )
 
-    restriction_options = dmc.SimpleGrid(
+    restriction_options = dmc.Grid(
         [
-            dmc.Card(
-                [
-                    dmc.CardSection(
-                        dmc.Text(
-                            "Cell Filters", fw=600, bg="var(--mantine-color-blue-1)"
+            dmc.GridCol(
+                dmc.Card(
+                    [
+                        dmc.CardSection(
+                            dmc.Text(
+                                "Cell Filters",
+                                fw=600,
+                                bg="var(--mantine-color-blue-1)",
+                                ta="center",
+                            ),
+                            withBorder=True,
                         ),
-                        withBorder=True,
-                        inheritPadding=True,
-                    ),
-                    dmc.SimpleGrid(
-                        [
-                            compartment_radio,
-                            split_point_option,
-                        ],
-                        cols=2,
-                    ),
-                ],
-                py="sx",
+                        dmc.SimpleGrid(
+                            [
+                                compartment_radio,
+                                split_point_option,
+                                topo_restriction,
+                            ],
+                            cols=3,
+                        ),
+                    ],
+                    py="sx",
+                    bg="var(--mantine-color-gray-1)",
+                    h="100%",
+                ),
+                span=7,
             ),
-            dmc.Card(
-                [
-                    dmc.CardSection(
-                        dmc.Text(
-                            "Time Filters", fw=600, bg="var(--mantine-color-teal-1)"
+            dmc.GridCol(
+                dmc.Card(
+                    [
+                        dmc.CardSection(
+                            dmc.Text(
+                                "Time Filters",
+                                fw=600,
+                                bg="var(--mantine-color-teal-1)",
+                                ta="center",
+                            ),
+                            withBorder=True,
                         ),
-                        withBorder=True,
-                        inheritPadding=True,
-                    ),
-                    dmc.SimpleGrid(
-                        [
-                            new_point_selector,
-                            time_restriction,
-                        ],
-                        cols=2,
-                    ),
-                ],
-                py="sx",
+                        dmc.SimpleGrid(
+                            [
+                                new_point_selector,
+                                time_restriction,
+                            ],
+                            cols=2,
+                        ),
+                    ],
+                    py="sx",
+                    bg="var(--mantine-color-gray-1)",
+                    h="100%",
+                ),
+                span=5,
             ),
         ],
-        cols=2,
-        spacing="md",
-        mt="15px",
+        # cols=2,
+        align="stretch",
     )
 
     point_links = dmc.Container(
-        dmc.Grid(
+        dmc.Stack(
             [
-                dmc.GridCol(
-                    html.Div(
-                        children=link_maker_button(
-                            "Generate End Point Link",
-                            button_id="end-point-link-button",
-                            disabled=True,
-                        ),
-                        id="end-point-link-card",
+                html.Div(
+                    children=link_maker_button(
+                        "Generate End Point Link",
+                        button_id="end-point-link-button",
+                        disabled=True,
                     ),
-                    span=4,
+                    id="end-point-link-card",
                 ),
-                dmc.GridCol(
-                    html.Div(
-                        link_maker_button(
-                            "Generate Branch Point Link",
-                            button_id="branch-point-link-button",
-                            disabled=True,
-                        ),
-                        id="branch-point-link-card",
+                html.Div(
+                    link_maker_button(
+                        "Generate Branch Point Link",
+                        button_id="branch-point-link-button",
+                        disabled=True,
                     ),
-                    span=4,
+                    id="branch-point-link-card",
                 ),
-                dmc.GridCol(
-                    html.Div(
-                        link_maker_button(
-                            "Generate End and Branch Point Link",
-                            button_id="branch-end-point-link-button",
-                            disabled=True,
-                        ),
-                        id="branch-end-point-link-card",
+                html.Div(
+                    link_maker_button(
+                        "Generate End and Branch Point Link",
+                        button_id="branch-end-point-link-button",
+                        disabled=True,
                     ),
-                    span=4,
+                    id="branch-end-point-link-card",
                 ),
             ],
         ),
         fluid=True,
+        mt=10,
     )
 
     path_links = dmc.Container(
-        dmc.Grid(
+        dmc.SimpleGrid(
             [
-                dmc.GridCol(
-                    dmc.Stack(
-                        [
-                            dmc.Checkbox(
-                                "Ignore short paths (<5 µm)",
-                                id="ignore-short-paths",
-                                checked=False,
-                            ),
-                            dmc.Checkbox(
-                                "Show mesh subset of path",
-                                id="show-mesh-subset",
-                                checked=False,
-                            ),
-                            dmc.Checkbox(
-                                "Hide path",
-                                id="hide-path",
-                                checked=False,
-                                disabled=True,
-                            ),
-                            dmc.Checkbox(
-                                "Resample paths",
-                                id="smooth-paths-checkbox",
-                                checked=True,
-                            ),
-                            dmc.NumberInput(
-                                id="smooth-paths-input",
-                                label="Resample distance (µm)",
-                                value=3,
-                                allowNegative=False,
-                                allowDecimal=False,
-                                min=1,
-                                max=10,
-                                step=1,
-                                disabled=False,
-                            ),
-                            dmc.Space(h=10),
-                            html.Div(
-                                children=link_maker_button(
-                                    "Generate Path Link",
-                                    button_id="path-link-button",
-                                    disabled=True,
-                                ),
-                                id="path-link-card",
-                            ),
-                        ],
-                        align="flex-start",
+                dmc.Stack(
+                    [
+                        dmc.Checkbox(
+                            "Ignore short paths (<5 µm)",
+                            id="ignore-short-paths",
+                            checked=False,
+                        ),
+                        dmc.Checkbox(
+                            "Show mesh subset of path",
+                            id="show-mesh-subset",
+                            checked=False,
+                        ),
+                        dmc.Checkbox(
+                            "Hide path",
+                            id="hide-path",
+                            checked=False,
+                            disabled=True,
+                            ml=15,
+                        ),
+                        dmc.Checkbox(
+                            "Resample paths",
+                            id="smooth-paths-checkbox",
+                            checked=True,
+                        ),
+                        dmc.NumberInput(
+                            id="smooth-paths-input",
+                            label="Resample distance (µm)",
+                            value=3,
+                            allowNegative=False,
+                            allowDecimal=False,
+                            min=1,
+                            max=10,
+                            step=1,
+                            disabled=False,
+                        ),
+                        dmc.Space(h=5),
+                    ],
+                    align="stretch",
+                ),
+                html.Div(
+                    children=link_maker_button(
+                        "Generate Path Link",
+                        button_id="path-link-button",
+                        disabled=True,
                     ),
-                    span=4,
+                    id="path-link-card",
                 ),
-                dmc.GridCol(
-                    span=4,
-                ),
-            ]
-        )
+            ],
+            cols=2,
+            spacing="sm",
+        ),
+        mt=10,
+        fluid=True,
     )
 
-    output_tabs = dmc.Tabs(
+    output_options = dmc.Grid(
         [
-            dmc.TabsList(
-                [
-                    dmc.TabsTab("Point Links", value="points_tab"),
-                    dmc.TabsTab("Path Links", value="paths_tab"),
-                ]
+            dmc.GridCol(
+                dmc.Card(
+                    [
+                        dmc.CardSection(
+                            dmc.Text(
+                                "Point Links",
+                                fw=600,
+                                bg="var(--mantine-color-indigo-6)",
+                                ta="center",
+                                c="white",
+                            ),
+                            withBorder=True,
+                        ),
+                        point_links,
+                    ]
+                ),
+                span=4,
+                offset=2,
             ),
-            dmc.TabsPanel(point_links, value="points_tab"),
-            dmc.TabsPanel(path_links, value="paths_tab"),
+            dmc.GridCol(
+                dmc.Card(
+                    [
+                        dmc.CardSection(
+                            dmc.Text(
+                                "Path Links",
+                                fw=600,
+                                bg="var(--mantine-color-indigo-6)",
+                                ta="center",
+                                c="white",
+                            ),
+                            withBorder=True,
+                        ),
+                        path_links,
+                    ]
+                ),
+                span=4,
+            ),
         ],
-        variant="outline",
-        value="points_tab",
-        orientation="vertical",
-        placement="left",
     )
 
     layout = dmc.MantineProvider(
@@ -345,18 +412,23 @@ def layout(**kwargs):
             header_row,
             dmc.Container(query_section, fluid=True, w="80%"),
             dmc.Container(message_row, fluid=True, w="80%"),
-            dmc.Container(dmc.Divider(), fluid=True, w="80%"),
+            dmc.Space(h=10),
             dmc.Container(restriction_options, fluid=True, w="80%"),
             dmc.Container(dmc.Divider(), fluid=True, w="80%"),
+            dmc.Space(h=10),
             dmc.Container(
                 dmc.Text(
                     "Links and Outputs",
-                    style={"font-size": "1.25rem"},
+                    fw=900,
+                    bg="var(--mantine-color-indigo-8)",
+                    ta="center",
+                    c="white",
                 ),
                 fluid=True,
                 w="80%",
+                h="40px",
             ),
-            dmc.Container(output_tabs, fluid=True, w="80%"),
+            dmc.Container(output_options, fluid=True, w="80%"),
             dcc.Store(id="timezone-offset"),
             dcc.Store(id="vertex-df"),
             dcc.Store(

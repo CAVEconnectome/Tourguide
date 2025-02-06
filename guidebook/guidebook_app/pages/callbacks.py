@@ -1,7 +1,7 @@
 import logging
 from typing import Optional
 import flask
-from dash import html, dcc, callback, Input, Output, State, ctx
+from dash import html, dcc, Input, Output, State, ctx, no_update
 import dash_mantine_components as dmc
 from ..utils import (
     stash_dataframe,
@@ -32,7 +32,7 @@ from datetime import datetime, timezone
 
 import logging
 
-if os.environ.get("GUIDEBOOK_VERBOSE_LOG") == "true":
+if os.environ.get("GUIDEBOOK_VERBOSE_LOG", "false") == "true":
     logging.getLogger().setLevel(logging.INFO)
 
 VERTEX_LIST_COLS = ["lvl2_id"]
@@ -49,6 +49,8 @@ RESET_LINK_TRIGGERS = [
     "ignore-short-paths",
     "smooth-paths-input",
     "smooth-paths-checkbox",
+    "topo-restriction-select",
+    "topo-restriction-input",
 ]
 
 SHORT_PATH_LENGTH = 5_000
@@ -92,6 +94,8 @@ def link_process_generic(
     compartment_filter,
     point_filter,
     restriction_point,
+    topo_restriction,
+    topo_restriction_value,
     only_new_lvl2,
     only_after_timestamp,
     horizon_timestamp,
@@ -128,6 +132,17 @@ def link_process_generic(
     except:
         restriction_point = None
     logging.info(f"\tRestriction Point: {restriction_point}")
+
+    if topo_restriction == "no-split":
+        max_branch_to_root = None
+        max_distance_to_root = None
+    elif topo_restriction == "branch-topo":
+        max_branch_to_root = int(topo_restriction_value)
+        max_distance_to_root = None
+    elif topo_restriction == "distance-topo":
+        max_branch_to_root = None
+        max_distance_to_root = int(topo_restriction_value) * 1_000
+
     if not is_path:
         logging.info(f"Working on point links")
         vertex_df = filter_dataframe(
@@ -139,6 +154,8 @@ def link_process_generic(
             only_new_lvl2=only_new_lvl2,
             only_after_timestamp=only_after_timestamp,
             horizon_timestamp=horizon_timestamp,
+            max_branch_to_root=max_branch_to_root,
+            max_distance_to_root=max_distance_to_root,
             client=client,
         )
         logging.info(f"vertex_df: {len(vertex_df)} points")
@@ -176,6 +193,8 @@ def link_process_generic(
             compartment_filter=compartment_filter,
             restriction_direction=point_filter,
             restriction_point=restriction_point,
+            max_branch_to_root=max_branch_to_root,
+            max_distance_to_root=max_distance_to_root,
             only_new_lvl2=only_new_lvl2,
             only_after_timestamp=only_after_timestamp,
             horizon_timestamp=horizon_timestamp,
@@ -230,8 +249,9 @@ def register_callbacks(app):
         )
 
     @app.callback(
-        Output("guidebook-root-id", "value"),
+        Output("guidebook-root-id", "value", allow_duplicate=True),
         Input("url", "search"),
+        prevent_initial_call="initial_duplicate",
     )
     def set_root_id(search):
         return root_id_from_url_query(search)
@@ -259,16 +279,21 @@ def register_callbacks(app):
         Output("radio-axon", "disabled"),
         Output("radio-dendrite", "disabled"),
         Output("url", "search"),
+        Output("guidebook-root-id", "value", allow_duplicate=True),
         [
             State("guidebook-root-id", "value"),
             State("url", "pathname"),
             Input("submit-button", "n_clicks"),
+            Input("update-id-button", "n_clicks"),
             State("seen-lvl2-ids", "data"),
         ],
         prevent_initial_call=True,
-        running=[(Output("submit-button", "loading"), True, False)],
+        running=[
+            (Output("submit-button", "loading"), True, False),
+            (Output("update-id-button", "loading"), True, False),
+        ],
     )
-    def process_root_id(root_id, url, _, seen_lvl2_ids):
+    def process_root_id(root_id, url, _, __, seen_lvl2_ids):
         t0 = time.time()
         if root_id is None:
             vertex_df = pd.DataFrame(columns=VERTEX_COLUMNS)
@@ -285,12 +310,24 @@ def register_callbacks(app):
                 True,
                 True,
                 None,
+                no_update,
             )
         client = lib_utils.make_client(
             get_datastack(url),
             server_address=os.environ.get("GUIDEBOOK_SERVER_ADDRESS"),
             auth_token=None,
         )
+        if ctx.triggered_id == "update-id-button":
+            new_root_id = client.chunkedgraph.suggest_latest_roots(int(root_id))
+            if new_root_id == int(root_id):
+                root_id_updated = False
+            else:
+                root_id_updated = True
+                old_id = root_id
+                root_id = new_root_id
+        else:
+            root_id_updated = False
+
         try:
             nrn = get_meshwork_from_client(
                 int(root_id),
@@ -314,13 +351,17 @@ def register_callbacks(app):
                 True,
                 True,
                 url_query_from_root_id(root_id),
+                no_update,
             )
 
         seen_lvl2_ids = rehydrate_id_list(seen_lvl2_ids)
         vertex_df = process_meshwork_to_dataframe(nrn)
         vertex_df = process_new_points(vertex_df, seen_lvl2_ids)
         disable_compartments = vertex_df["is_axon"].nunique() == 1
-        message_text = f"Pre-processed root ID {root_id} with {len(vertex_df)} vertices in {time.time() - t0:.2f} seconds."
+        if root_id_updated:
+            message_text = f"Pre-processed root ID {root_id} (updated from {old_id}) with {len(vertex_df)} vertices in {time.time() - t0:.2f} seconds."
+        else:
+            message_text = f"Pre-processed root ID {root_id} with {len(vertex_df)} vertices in {time.time() - t0:.2f} seconds."
         message_color = "green"
         new_seen_lvl2_ids = update_seen_id_list(seen_lvl2_ids, vertex_df)
         return (
@@ -336,6 +377,7 @@ def register_callbacks(app):
             disable_compartments,
             disable_compartments,
             url_query_from_root_id(root_id),
+            root_id,
         )
 
     @app.callback(
@@ -346,6 +388,8 @@ def register_callbacks(app):
         Input("compartment-radio", "value"),
         Input("split-point-select", "value"),
         Input("split-point-input", "value"),
+        Input("topo-restriction-select", "value"),
+        Input("topo-restriction-input", "value"),
         Input("new-point-checkbox", "checked"),
         Input("use-time-restriction", "checked"),
         Input("restriction-datetime", "value"),
@@ -361,6 +405,8 @@ def register_callbacks(app):
         compartment_filter,
         point_filter,
         restriction_point,
+        topo_restriction,
+        topo_restriction_value,
         only_new_lvl2,
         use_time_restriction,
         restriction_datetime,
@@ -388,6 +434,8 @@ def register_callbacks(app):
             compartment_filter,
             point_filter,
             restriction_point,
+            topo_restriction,
+            topo_restriction_value,
             only_new_lvl2,
             use_time_restriction,
             convert_time_string_to_utc(restriction_datetime, utc_offset),
@@ -401,6 +449,8 @@ def register_callbacks(app):
         Input("compartment-radio", "value"),
         Input("split-point-select", "value"),
         Input("split-point-input", "value"),
+        Input("topo-restriction-select", "value"),
+        Input("topo-restriction-input", "value"),
         Input("new-point-checkbox", "checked"),
         Input("use-time-restriction", "checked"),
         Input("restriction-datetime", "value"),
@@ -416,6 +466,8 @@ def register_callbacks(app):
         compartment_filter,
         point_filter,
         restriction_point,
+        topo_restriction,
+        topo_restriction_value,
         only_new_lvl2,
         use_time_restriction,
         restriction_datetime,
@@ -443,6 +495,8 @@ def register_callbacks(app):
             compartment_filter,
             point_filter,
             restriction_point,
+            topo_restriction,
+            topo_restriction_value,
             only_new_lvl2,
             use_time_restriction,
             convert_time_string_to_utc(restriction_datetime, utc_offset),
@@ -456,6 +510,8 @@ def register_callbacks(app):
         Input("compartment-radio", "value"),
         Input("split-point-select", "value"),
         Input("split-point-input", "value"),
+        Input("topo-restriction-select", "value"),
+        Input("topo-restriction-input", "value"),
         Input("new-point-checkbox", "checked"),
         Input("use-time-restriction", "checked"),
         Input("restriction-datetime", "value"),
@@ -471,6 +527,8 @@ def register_callbacks(app):
         compartment_filter,
         point_filter,
         restriction_point,
+        topo_restriction,
+        topo_restriction_value,
         only_new_lvl2,
         use_time_restriction,
         restriction_datetime,
@@ -497,6 +555,8 @@ def register_callbacks(app):
             compartment_filter,
             point_filter,
             restriction_point,
+            topo_restriction,
+            topo_restriction_value,
             only_new_lvl2,
             use_time_restriction,
             convert_time_string_to_utc(restriction_datetime, utc_offset),
@@ -529,6 +589,17 @@ def register_callbacks(app):
         if split_value == "no-split":
             return True, "", None
         return False, input_value, error_value
+
+    @app.callback(
+        Output("topo-restriction-input", "disabled"),
+        Output("topo-restriction-input", "value"),
+        Input("topo-restriction-select", "value"),
+        Input("topo-restriction-input", "value"),
+    )
+    def toggle_topo_restriction_input(select_value, input_value):
+        if select_value == "no-split":
+            return True, ""
+        return False, input_value
 
     @app.callback(
         Output("clear-history-modal", "opened"),
@@ -595,6 +666,8 @@ def register_callbacks(app):
         Input("compartment-radio", "value"),
         Input("split-point-select", "value"),
         Input("split-point-input", "value"),
+        Input("topo-restriction-select", "value"),
+        Input("topo-restriction-input", "value"),
         Input("new-point-checkbox", "checked"),
         Input("use-time-restriction", "checked"),
         Input("restriction-datetime", "value"),
@@ -615,6 +688,8 @@ def register_callbacks(app):
         compartment_filter,
         point_filter,
         restriction_point,
+        topo_restriction,
+        topo_restriction_value,
         only_new_lvl2,
         use_time_restriction,
         restriction_datetime,
@@ -648,6 +723,8 @@ def register_callbacks(app):
             compartment_filter=compartment_filter,
             point_filter=point_filter,
             restriction_point=restriction_point,
+            topo_restriction=topo_restriction,
+            topo_restriction_value=topo_restriction_value,
             only_new_lvl2=only_new_lvl2,
             only_after_timestamp=use_time_restriction,
             horizon_timestamp=convert_time_string_to_utc(
