@@ -41,7 +41,7 @@ def layout(**kwargs):
             ),
             dmc.GridCol(
                 dmc.Button(
-                    children="Update Root ID",
+                    children="Update & Submit",
                     id="update-id-button",
                     color="var(--mantine-color-indigo-4)",
                     size="sm",

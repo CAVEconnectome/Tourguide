@@ -79,9 +79,7 @@ def num_branch_points(nrn):
     n_bp = np.zeros(len(nrn.skeleton.vertices), dtype=int)
     bp = nrn.skeleton.branch_points
     for bp, ds_list in zip(bp, nrn.skeleton.downstream_nodes(bp)):
-        if bp == nrn.skeleton.root:
-            continue
-        n_bp[ds_list] = n_bp[ds_list] + 1
+        _bp[ds_list] = n_bp[ds_list] + 1
     return n_bp
 
 
@@ -323,6 +321,10 @@ def _make_skeleton_filter(
         mask &= vertex_df[NEW_POINT_COLUMN].values
     if only_after_timestamp:
         mask &= vertex_df[NEW_TIMESTAMP_COLUMN].values
+    if max_branch_to_root is not None:
+        mask &= vertex_df[NUM_BRANCH_TO_ROOT_COLUMN] <= max_branch_to_root + 1
+    if max_distance_to_root is not None:
+        mask &= vertex_df[DISTANCE_COLUMN] <= max_distance_to_root
     return mask
 
 
