@@ -71,6 +71,7 @@ def _make_point_link(
     vertex_df: pd.DataFrame,
     client: caveclient.CAVEclient,
     use_skeleton_service: bool = True,
+    tags: Optional[list] = None,
 ):
     config_ngl(client)
     sb = make_point_statebuilder(
@@ -82,6 +83,7 @@ def _make_point_link(
         view_kws={"zoom_3d": DEFAULT_ZOOM},
         layer_colors=LAYER_COLORS,
         client=client,
+        tags=tags,
     )
 
     sort_order = [
@@ -111,6 +113,7 @@ def end_point_link(
     vertex_df: pd.DataFrame,
     client: str,
     use_skeleton_service: bool = True,
+    tags: Optional[list] = None,
 ) -> str:
     return _make_point_link(
         ["end_points"],
@@ -118,6 +121,7 @@ def end_point_link(
         vertex_df,
         client,
         use_skeleton_service,
+        tags=tags,
     )
 
 
@@ -126,6 +130,7 @@ def branch_point_link(
     vertex_df: pd.DataFrame,
     client: str,
     use_skeleton_service: bool = True,
+    tags: Optional[list] = None,
 ) -> str:
     return _make_point_link(
         ["branch_points"],
@@ -133,6 +138,7 @@ def branch_point_link(
         vertex_df,
         client,
         use_skeleton_service,
+        tags=tags,
     )
 
 
@@ -141,6 +147,7 @@ def branch_end_point_link(
     vertex_df: pd.DataFrame,
     client: str,
     use_skeleton_service: bool = True,
+    tags: Optional[list] = None,
 ) -> str:
     return _make_point_link(
         ["end_points", "branch_points"],
@@ -148,6 +155,7 @@ def branch_end_point_link(
         vertex_df,
         client,
         use_skeleton_service,
+        tags=tags,
     )
 
 
@@ -155,6 +163,7 @@ def _make_point_annotation_layer(
     layer_name: str,
     color: Union[tuple, str],
     split_positions: bool,
+    tags: Optional[list] = None,
 ):
     return nglui.statebuilder.AnnotationLayerConfig(
         layer_name,
@@ -164,6 +173,7 @@ def _make_point_annotation_layer(
             mapping_set=layer_name,
             split_positions=split_positions,
         ),
+        tags=tags,
         data_resolution=[1, 1, 1],
     )
 
@@ -176,6 +186,7 @@ def make_point_statebuilder(
     client: caveclient.CAVEclient,
     root_ids: list = [],
     layer_colors: dict = {},
+    tags: Optional[list] = None,
     view_kws: dict = {},
 ) -> nglui.statebuilder.StateBuilder:
     img, seg = base_layers(
@@ -188,6 +199,7 @@ def make_point_statebuilder(
                 layer_name=l,
                 color=layer_colors.get(l),
                 split_positions=split_positions,
+                tags=tags,
             )
         )
     return nglui.statebuilder.StateBuilder(
@@ -215,6 +227,7 @@ def _path_annotation_layer(
     split_positions: bool,
     pointA="pointA",
     pointB="pointB",
+    tags=None,
 ):
     return nglui.statebuilder.AnnotationLayerConfig(
         layer_name,
@@ -225,6 +238,7 @@ def _path_annotation_layer(
             mapping_set=layer_name,
             split_positions=split_positions,
         ),
+        tags=tags,
         data_resolution=[1, 1, 1],
     )
 
@@ -238,6 +252,7 @@ def make_path_statebuilder(
     view_kws: dict = {},
     add_restricted_segmentation_layer: bool = False,
     restricted_color: Optional[Union[tuple, str]] = None,
+    tags: Optional[list] = None,
 ):
     config_ngl(client)
 
@@ -251,6 +266,7 @@ def make_path_statebuilder(
         layer_name=COVER_PATH_LAYER,
         color=color,
         split_positions=split_positions,
+        tags=tags,
     )
     layers = [img, seg, path_anno]
     if restricted_color is None:

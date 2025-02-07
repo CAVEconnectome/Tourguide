@@ -3,7 +3,7 @@ requires = ["hatchling>=1.26.1"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/foo"]
+packages = ["src"]
 
 [project]
 name = "guidebook"

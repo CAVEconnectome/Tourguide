@@ -36,6 +36,7 @@ def layout(**kwargs):
                     id="submit-button",
                     color="var(--mantine-color-indigo-7)",
                     size="lg",
+                    loaderProps={"type": "bars"},
                 ),
                 span=1,
             ),
@@ -46,6 +47,7 @@ def layout(**kwargs):
                     color="var(--mantine-color-indigo-4)",
                     size="sm",
                     ml=50,
+                    loaderProps={"type": "bars"},
                 ),
                 span=1,
             ),
@@ -263,8 +265,25 @@ def layout(**kwargs):
                 span=5,
             ),
         ],
-        # cols=2,
         align="stretch",
+    )
+
+    tag_picker = dmc.Container(
+        dmc.TagsInput(
+            id="annotation-tag-list",
+            label="Set Annotation Tags",
+            description="Choose or add tags (up to 6)",
+            value=[],
+            data=[
+                {"value": "done", "label": "Done"},
+                {"value": "fixed", "label": "Fixed"},
+                {"value": "correct", "label": "Correct"},
+                {"value": "error", "label": "Error"},
+            ],
+            clearable=True,
+            maxTags=6,
+            w=200,
+        )
     )
 
     point_links = dmc.Container(
@@ -358,48 +377,57 @@ def layout(**kwargs):
         fluid=True,
     )
 
-    output_options = dmc.Grid(
-        [
-            dmc.GridCol(
-                dmc.Card(
-                    [
-                        dmc.CardSection(
-                            dmc.Text(
-                                "Point Links",
-                                fw=600,
-                                bg="var(--mantine-color-indigo-6)",
-                                ta="center",
-                                c="white",
-                            ),
-                            withBorder=True,
-                        ),
-                        point_links,
-                    ]
+    output_options = dmc.Center(
+        dmc.Grid(
+            [
+                dmc.GridCol(
+                    dmc.Card(
+                        [
+                            tag_picker,
+                        ]
+                    ),
+                    span=3,
+                    w=400,
                 ),
-                span=4,
-                offset=2,
-            ),
-            dmc.GridCol(
-                dmc.Card(
-                    [
-                        dmc.CardSection(
-                            dmc.Text(
-                                "Path Links",
-                                fw=600,
-                                bg="var(--mantine-color-indigo-6)",
-                                ta="center",
-                                c="white",
+                dmc.GridCol(
+                    dmc.Card(
+                        [
+                            dmc.CardSection(
+                                dmc.Text(
+                                    "Point Links",
+                                    fw=600,
+                                    bg="var(--mantine-color-indigo-6)",
+                                    ta="center",
+                                    c="white",
+                                ),
+                                withBorder=True,
                             ),
-                            withBorder=True,
-                        ),
-                        path_links,
-                    ]
+                            point_links,
+                        ]
+                    ),
+                    span=3,
                 ),
-                span=4,
-            ),
-        ],
+                dmc.GridCol(
+                    dmc.Card(
+                        [
+                            dmc.CardSection(
+                                dmc.Text(
+                                    "Path Links",
+                                    fw=600,
+                                    bg="var(--mantine-color-indigo-6)",
+                                    ta="center",
+                                    c="white",
+                                ),
+                                withBorder=True,
+                            ),
+                            path_links,
+                        ]
+                    ),
+                    span=4,
+                ),
+            ],
+        )
     )
-
     layout = dmc.MantineProvider(
         children=[
             dcc.Location("url", refresh=False),

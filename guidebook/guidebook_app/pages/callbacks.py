@@ -51,6 +51,7 @@ RESET_LINK_TRIGGERS = [
     "smooth-paths-checkbox",
     "topo-restriction-select",
     "topo-restriction-input",
+    "annotation-tag-list",
 ]
 
 SHORT_PATH_LENGTH = 5_000
@@ -105,6 +106,7 @@ def link_process_generic(
     hide_path=None,
     smooth_paths=None,
     smooth_paths_distance=None,
+    tags=None,
 ):
     # Not having good data should also reset the links
     if root_id is None or root_id == "" or vertex_data is None or vertex_data == []:
@@ -167,7 +169,12 @@ def link_process_generic(
                 disabled=True,
             )
         else:
-            url = url_function(int(root_id), vertex_df, client)
+            url = url_function(
+                int(root_id),
+                vertex_df,
+                client,
+                tags=tags,
+            )
             logging.info(f"Generating button with url: {url}")
             return link_maker_button(
                 f"{point_name} Link",
@@ -230,6 +237,7 @@ def link_process_generic(
                 root_ids=[int(root_id)],
                 add_restricted_segmentation_layer=show_mesh_subset,
                 restricted_color="white",
+                tags=tags,
             )
             url = url_function(sb_data, sb, client)
             logging.info(f"Generating button with url: {url}")
@@ -360,9 +368,10 @@ def register_callbacks(app):
         disable_compartments = vertex_df["is_axon"].nunique() == 1
         if root_id_updated:
             message_text = f"Pre-processed root ID {root_id} (updated from {old_id}) with {len(vertex_df)} vertices in {time.time() - t0:.2f} seconds."
+            message_color = "violet"
         else:
             message_text = f"Pre-processed root ID {root_id} with {len(vertex_df)} vertices in {time.time() - t0:.2f} seconds."
-        message_color = "green"
+            message_color = "green"
         new_seen_lvl2_ids = update_seen_id_list(seen_lvl2_ids, vertex_df)
         return (
             str(root_id),
@@ -394,6 +403,7 @@ def register_callbacks(app):
         Input("use-time-restriction", "checked"),
         Input("restriction-datetime", "value"),
         Input("timezone-offset", "data"),
+        Input("annotation-tag-list", "value"),
         Input("end-point-link-button", "n_clicks"),
         prevent_initial_call=True,
         running=[(Output("end-point-link-button", "loading"), True, False)],
@@ -411,6 +421,7 @@ def register_callbacks(app):
         use_time_restriction,
         restriction_datetime,
         utc_offset,
+        tags,
         _,
     ):
         point_name = "End Point"
@@ -439,6 +450,7 @@ def register_callbacks(app):
             only_new_lvl2,
             use_time_restriction,
             convert_time_string_to_utc(restriction_datetime, utc_offset),
+            tags=tags,
         )
 
     @app.callback(
@@ -455,6 +467,7 @@ def register_callbacks(app):
         Input("use-time-restriction", "checked"),
         Input("restriction-datetime", "value"),
         Input("timezone-offset", "data"),
+        Input("annotation-tag-list", "value"),
         Input("branch-point-link-button", "n_clicks"),
         prevent_initial_call=True,
         running=[(Output("branch-point-link-button", "loading"), True, False)],
@@ -472,6 +485,7 @@ def register_callbacks(app):
         use_time_restriction,
         restriction_datetime,
         utc_offset,
+        tags,
         _,
     ):
         point_name = "Branch Point"
@@ -500,6 +514,7 @@ def register_callbacks(app):
             only_new_lvl2,
             use_time_restriction,
             convert_time_string_to_utc(restriction_datetime, utc_offset),
+            tags=tags,
         )
 
     @app.callback(
@@ -516,6 +531,7 @@ def register_callbacks(app):
         Input("use-time-restriction", "checked"),
         Input("restriction-datetime", "value"),
         Input("timezone-offset", "data"),
+        Input("annotation-tag-list", "value"),
         Input("branch-end-point-link-button", "n_clicks"),
         prevent_initial_call=True,
         running=[(Output("branch-end-point-link-button", "loading"), True, False)],
@@ -533,6 +549,7 @@ def register_callbacks(app):
         use_time_restriction,
         restriction_datetime,
         utc_offset,
+        tags,
         _,
     ):
         point_name = "Branch and End Point"
@@ -560,6 +577,7 @@ def register_callbacks(app):
             only_new_lvl2,
             use_time_restriction,
             convert_time_string_to_utc(restriction_datetime, utc_offset),
+            tags=tags,
         )
 
     @app.callback(
@@ -677,6 +695,7 @@ def register_callbacks(app):
         Input("hide-path", "checked"),
         Input("smooth-paths-checkbox", "checked"),
         Input("smooth-paths-input", "value"),
+        Input("annotation-tag-list", "value"),
         Input("path-link-button", "n_clicks"),
         prevent_initial_call=True,
         running=[(Output("path-link-button", "loading"), True, False)],
@@ -699,6 +718,7 @@ def register_callbacks(app):
         hide_path,
         smooth_paths,
         smooth_paths_distance,
+        tags,
         _,
     ):
         point_name = "Path"
@@ -736,4 +756,5 @@ def register_callbacks(app):
             hide_path=hide_path,
             smooth_paths=smooth_paths,
             smooth_paths_distance=smooth_paths_distance,
+            tags=tags,
         )
