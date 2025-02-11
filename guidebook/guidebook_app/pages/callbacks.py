@@ -127,7 +127,6 @@ def link_process_generic(
     client = lib_utils.make_client(
         datastack_name=datastack_name,
         server_address=os.environ.get("GUIDEBOOK_SERVER_ADDRESS"),
-        auth_token=None,
     )
     try:
         restriction_point = lib_utils.process_point_string(restriction_point)
@@ -323,7 +322,6 @@ def register_callbacks(app):
         client = lib_utils.make_client(
             get_datastack(url),
             server_address=os.environ.get("GUIDEBOOK_SERVER_ADDRESS"),
-            auth_token=None,
         )
         if ctx.triggered_id == "update-id-button":
             new_root_id = client.chunkedgraph.suggest_latest_roots(int(root_id))

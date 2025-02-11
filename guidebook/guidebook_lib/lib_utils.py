@@ -1,3 +1,4 @@
+import flask
 from typing import Optional
 from caveclient import CAVEclient
 from caveclient.tools.caching import CachedClient
@@ -6,9 +7,15 @@ from caveclient.tools.caching import CachedClient
 def make_client(
     datastack_name: str,
     server_address: Optional[str] = None,
-    auth_token: Optional[str] = None,
 ):
     "Generate the appropriate CAVEclient with info caching"
+    try:
+        auth_token = flask.g.get("auth_token", None)
+    except:
+        auth_token = None
+    print(
+        f"Making client with datastack_name: {datastack_name} and auth-token: {auth_token}"
+    )
     return CachedClient(
         datastack_name=datastack_name,
         server_address=server_address,
@@ -18,8 +25,12 @@ def make_client(
 
 def make_global_client(
     server_address: str,
-    auth_token: str,
 ):
+    try:
+        auth_token = flask.g.get("auth_token", None)
+    except:
+        auth_token = None
+
     return CAVEclient(
         datastack_name=None,
         server_address=server_address,

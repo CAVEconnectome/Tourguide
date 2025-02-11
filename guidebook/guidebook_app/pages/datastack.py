@@ -279,6 +279,7 @@ def layout(**kwargs):
                 {"value": "fixed", "label": "Fixed"},
                 {"value": "correct", "label": "Correct"},
                 {"value": "error", "label": "Error"},
+                {"value": "unsure", "label": "Unsure"},
             ],
             clearable=True,
             maxTags=6,
@@ -330,7 +331,7 @@ def layout(**kwargs):
                             checked=False,
                         ),
                         dmc.Checkbox(
-                            "Show mesh subset of path",
+                            "Show filtered mesh (adds 10–30 seconds)",
                             id="show-mesh-subset",
                             checked=False,
                         ),
