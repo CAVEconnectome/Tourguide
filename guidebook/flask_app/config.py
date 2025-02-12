@@ -33,6 +33,10 @@ def parse_datastack_name(url):
         return None
 
 
+def check_is_already_authed(url):
+    return "middle_auth_token" in parse.urlparse(url).query
+
+
 def datastack_specific_auth(
     view_func,
 ):
@@ -41,8 +45,9 @@ def datastack_specific_auth(
     def view_func_wrapped(*args, **kwargs):
         url = kwargs["path"]
         datastack_name = parse_datastack_name(url)
+        is_authed = check_is_already_authed(url)
         print(f"auth datastack: {datastack_name}")
-        if datastack_name:
+        if datastack_name and not is_authed:
             return auth_requires_permission(
                 "view",
                 table_id=datastack_name,

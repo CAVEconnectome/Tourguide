@@ -60,7 +60,7 @@ lint = [
 default-groups = ["dev", "docs", "lint", "profile"]
 
 [tool.bumpversion]
-current_version = "0.0.1"
+current_version = "2.0.0"
 parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
 serialize = ["{major}.{minor}.{patch}"]
 search = "{current_version}"

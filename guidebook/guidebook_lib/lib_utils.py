@@ -9,33 +9,19 @@ def make_client(
     server_address: Optional[str] = None,
 ):
     "Generate the appropriate CAVEclient with info caching"
-    try:
-        auth_token = flask.g.get("auth_token", None)
-    except:
-        auth_token = None
-    print(
-        f"Making client with datastack_name: {datastack_name} and auth-token: {auth_token}"
-    )
     return CachedClient(
         datastack_name=datastack_name,
         server_address=server_address,
-        auth_token=auth_token,
     )
 
 
 def make_global_client(
     server_address: str,
 ):
-    try:
-        auth_token = flask.g.get("auth_token", None)
-    except:
-        auth_token = None
-
     return CAVEclient(
         datastack_name=None,
         server_address=server_address,
         global_only=True,
-        auth_token=auth_token,
     )
 
 
