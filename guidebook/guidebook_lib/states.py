@@ -27,12 +27,14 @@ def set_default_ngl_configuration(
     datastack_name: str,
     target_url: str,
     target_site: str = "spelunker",
+    client: caveclient.CAVEclient = None,
 ) -> None:
     nglui.statebuilder.site_utils.set_default_config(
         target_site=target_site,
         target_url=target_url,
         datastack_name=datastack_name,
         config_key=datastack_name,
+        caveclient=client,
     )
 
 
@@ -45,6 +47,7 @@ def config_ngl(client, target_url=None, target_site="spelunker") -> None:
             datastack_name=datastack_name,
             target_url=target_url,
             target_site=target_site,
+            client=client,
         )
 
 
