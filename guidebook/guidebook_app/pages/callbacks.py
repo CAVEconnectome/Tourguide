@@ -107,6 +107,7 @@ def link_process_generic(
     smooth_paths=None,
     smooth_paths_distance=None,
     tags=None,
+    auth_token=None,
 ):
     # Not having good data should also reset the links
     if root_id is None or root_id == "" or vertex_data is None or vertex_data == []:
@@ -127,7 +128,7 @@ def link_process_generic(
     client = lib_utils.make_client(
         datastack_name=datastack_name,
         server_address=os.environ.get("GUIDEBOOK_SERVER_ADDRESS"),
-        auth_token=flask.g.get("auth_token", "no_token"),
+        auth_token=auth_token,
     )
     try:
         restriction_point = lib_utils.process_point_string(restriction_point)
@@ -323,7 +324,7 @@ def register_callbacks(app):
         client = lib_utils.make_client(
             get_datastack(url),
             server_address=os.environ.get("GUIDEBOOK_SERVER_ADDRESS"),
-            auth_token=flask.g.get("auth_token", "no_token"),
+            auth_token=flask.g.get("auth_token"),
         )
         if ctx.triggered_id == "update-id-button":
             new_root_id = client.chunkedgraph.suggest_latest_roots(int(root_id))
@@ -451,6 +452,7 @@ def register_callbacks(app):
             use_time_restriction,
             convert_time_string_to_utc(restriction_datetime, utc_offset),
             tags=tags,
+            auth_token=flask.g.get("auth_token"),
         )
 
     @app.callback(
@@ -515,6 +517,7 @@ def register_callbacks(app):
             use_time_restriction,
             convert_time_string_to_utc(restriction_datetime, utc_offset),
             tags=tags,
+            auth_token=flask.g.get("auth_token"),
         )
 
     @app.callback(
@@ -578,6 +581,7 @@ def register_callbacks(app):
             use_time_restriction,
             convert_time_string_to_utc(restriction_datetime, utc_offset),
             tags=tags,
+            auth_token=flask.g.get("auth_token"),
         )
 
     @app.callback(
@@ -757,4 +761,5 @@ def register_callbacks(app):
             smooth_paths=smooth_paths,
             smooth_paths_distance=smooth_paths_distance,
             tags=tags,
+            auth_token=flask.g.get("auth_token"),
         )
