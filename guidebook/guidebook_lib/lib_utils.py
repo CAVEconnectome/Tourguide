@@ -7,21 +7,25 @@ from caveclient.tools.caching import CachedClient
 def make_client(
     datastack_name: str,
     server_address: Optional[str] = None,
+    auth_token: Optional[str] = None,
 ):
     "Generate the appropriate CAVEclient with info caching"
     return CachedClient(
         datastack_name=datastack_name,
         server_address=server_address,
+        auth_token=auth_token,
     )
 
 
 def make_global_client(
     server_address: str,
+    auth_token: Optional[str] = None,
 ):
     return CAVEclient(
         datastack_name=None,
         server_address=server_address,
         global_only=True,
+        auth_token=auth_token,
     )
 
 

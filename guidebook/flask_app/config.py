@@ -21,6 +21,13 @@ def protect_app(app):
     pages_url = f"{app.config.requests_pathname_prefix}<path:path>"
     view_func = app.server.view_functions[pages_url]
     app.server.view_functions[pages_url] = datastack_specific_auth(view_func)
+
+    # Pass the update component view function through the auth_required decorator
+    # in order to make auth token available to callbacks.
+    update_url = f"{app.config.requests_pathname_prefix}_dash-update-component"
+    app.server.view_functions[update_url] = auth_required_(
+        app.server.view_functions[update_url]
+    )
     return app
 
 
@@ -53,6 +60,22 @@ def datastack_specific_auth(
                 table_id=datastack_name,
                 resource_namespace="datastack",
             )(view_func)(*args, **kwargs)
+        else:
+            return view_func(*args, **kwargs)
+
+    view_func_wrapped.__name__ = view_func.__name__ + "_wrapped"
+    return view_func_wrapped
+
+
+def auth_required_(
+    view_func,
+):
+    print(f"Protecting func: {view_func}")
+
+    def view_func_wrapped(*args, **kwargs):
+        url = kwargs.get("path", "")
+        if not check_is_already_authed(url):
+            return auth_required(view_func)(*args, **kwargs)
         else:
             return view_func(*args, **kwargs)
 
