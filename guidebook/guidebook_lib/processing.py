@@ -1,4 +1,3 @@
-import logging
 import os
 from datetime import datetime
 from typing import Literal, Optional
@@ -10,9 +9,7 @@ from meshparty import meshwork, skeleton
 from pcg_skel import chunk_tools
 from scipy import sparse
 
-if os.environ.get("GUIDEBOOK_VERBOSE_LOG", "false") == "true":
-    logging.getLogger().setLevel(logging.INFO)
-
+from ..flask_app.config import logger
 
 VERTEX_POINT = "pt"
 VERTEX_COLUMNS = [f"{VERTEX_POINT}_{suf}" for suf in ["x", "y", "z"]]
@@ -69,7 +66,7 @@ def process_meshwork_to_dataframe(
 
     vert_df[ROOT_COLUMN] = False
     vert_df.loc[int(nrn.skeleton.root), ROOT_COLUMN] = True
-    logging.info(
+    logger.debug(
         f"Processed meshwork to dataframe with root at {int(nrn.skeleton.root)}"
     )
     return vert_df

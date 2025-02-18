@@ -1,16 +1,18 @@
 from middle_auth_client import (
     auth_required,
-    auth_requires_admin,
     auth_requires_permission,
 )
 from urllib import parse
 import re
 
-import logging
+from loguru import logger
 import os
 
 if os.environ.get("GUIDEBOOK_VERBOSE_LOG", "false") == "true":
-    logging.getLogger().setLevel(logging.INFO)
+    import sys
+
+    logger.remove()
+    logger.add(sys.stderr, colorize=True, level="DEBUG")
 
 
 def configure_app(app):
@@ -41,19 +43,20 @@ def parse_datastack_name(url):
 
 
 def check_is_already_authed(url):
+    logger.debug("keys: ", parse.urlparse(url).query)
     return "middle_auth_token" in parse.urlparse(url).query
 
 
 def datastack_specific_auth(
     view_func,
 ):
-    print(f"Protecting func: {view_func}")
+    logger.debug(f"Protecting func: {view_func}")
 
     def view_func_wrapped(*args, **kwargs):
         url = kwargs["path"]
         datastack_name = parse_datastack_name(url)
         is_authed = check_is_already_authed(url)
-        print(f"auth datastack: {datastack_name}")
+        logger.debug(f"auth datastack: {datastack_name}")
         if datastack_name and not is_authed:
             return auth_requires_permission(
                 "view",
@@ -70,7 +73,7 @@ def datastack_specific_auth(
 def auth_required_(
     view_func,
 ):
-    print(f"Protecting func: {view_func}")
+    logger.debug(f"Protecting func: {view_func}")
 
     def view_func_wrapped(*args, **kwargs):
         url = kwargs.get("path", "")

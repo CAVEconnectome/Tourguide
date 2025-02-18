@@ -27,6 +27,7 @@ dependencies = [
     "pandas>=2.2.3",
     "pcg-skel>=1.2.2",
     "scipy",
+    "loguru>=0.7.3",
 ]
 authors = [
     { name = "Casey Schneider-Mizell", email = "caseys@alleninstitute.org" },

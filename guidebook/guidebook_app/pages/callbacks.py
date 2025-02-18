@@ -1,4 +1,3 @@
-import logging
 from typing import Optional
 import flask
 from dash import html, dcc, Input, Output, State, ctx, no_update
@@ -29,11 +28,7 @@ import os
 from urllib.parse import parse_qs, urlparse, urlencode
 from datetime import datetime, timezone
 
-
-import logging
-
-if os.environ.get("GUIDEBOOK_VERBOSE_LOG", "false") == "true":
-    logging.getLogger().setLevel(logging.INFO)
+from ...flask_app.config import logger
 
 VERTEX_LIST_COLS = ["lvl2_id"]
 
@@ -134,7 +129,7 @@ def link_process_generic(
         restriction_point = lib_utils.process_point_string(restriction_point)
     except:
         restriction_point = None
-    logging.info(f"\tRestriction Point: {restriction_point}")
+    logger.debug(f"\tRestriction Point: {restriction_point}")
 
     if topo_restriction == "no-split":
         max_branch_to_root = None
@@ -147,7 +142,7 @@ def link_process_generic(
         max_distance_to_root = int(topo_restriction_value) * 1_000
 
     if not is_path:
-        logging.info(f"Working on point links")
+        logger.debug(f"Working on point links")
         vertex_df = filter_dataframe(
             root_id=int(root_id),
             vertex_df=rehydrate_dataframe(vertex_data, list_columns=[LVL2_ID_COLUMN]),
@@ -161,7 +156,7 @@ def link_process_generic(
             max_distance_to_root=max_distance_to_root,
             client=client,
         )
-        logging.info(f"vertex_df: {len(vertex_df)} points")
+        logger.debug(f"vertex_df: {len(vertex_df)} points")
 
         if sum(vertex_df[END_POINT_COLUMN]) == 0:
             return link_maker_button(
@@ -176,7 +171,7 @@ def link_process_generic(
                 client,
                 tags=tags,
             )
-            logging.info(f"Generating button with url: {url}")
+            logger.debug(f"Generating button with url: {url}")
             return link_maker_button(
                 f"{point_name} Link",
                 button_id=button_id,
@@ -187,12 +182,12 @@ def link_process_generic(
             min_path_length = SHORT_PATH_LENGTH
         else:
             min_path_length = None
-        logging.info(f"\tSmooth Paths: {smooth_paths}")
+        logger.debug(f"\tSmooth Paths: {smooth_paths}")
         if smooth_paths:
             step_size = smooth_paths_distance
         else:
             step_size = None
-        logging.info(f"\tStep Size: {step_size}")
+        logger.debug(f"\tStep Size: {step_size}")
         vertex_df = rehydrate_dataframe(vertex_data, list_columns=[LVL2_ID_COLUMN])
         path_df, lvl2_ids = process_paths(
             root_id=int(root_id),
@@ -211,9 +206,9 @@ def link_process_generic(
             step_size=step_size,
         )
         if show_mesh_subset:
-            logging.info(f"\tpath df: {len(path_df)}. lvl2_ids: {len(lvl2_ids)}")
+            logger.debug(f"\tpath df: {len(path_df)}. lvl2_ids: {len(lvl2_ids)}")
         else:
-            logging.info(f"\tpath df: {len(path_df)}, lvl2_ids: None")
+            logger.debug(f"\tpath df: {len(path_df)}, lvl2_ids: None")
         sb_data = states.package_path_data(
             path_df,
             lvl2_ids,
@@ -221,7 +216,7 @@ def link_process_generic(
             client=client,
         )
 
-        logging.info(f"\tMade sb_data: {{k: len(v) for k, v in sb_data.items()}}")
+        logger.debug(f"\tMade sb_data: {{k: len(v) for k, v in sb_data.items()}}")
         if len(vertex_df) == 0:
             return link_maker_button(
                 f"No Matching {point_name}s",
@@ -229,7 +224,7 @@ def link_process_generic(
                 disabled=True,
             )
         else:
-            logging.info(f"Making statebuilder for paths")
+            logger.debug(f"Making statebuilder for paths")
             sb = states.make_path_statebuilder(
                 color="white",
                 use_skeleton_service=True,
@@ -241,7 +236,7 @@ def link_process_generic(
                 tags=tags,
             )
             url = url_function(sb_data, sb, client)
-            logging.info(f"Generating button with url: {url}")
+            logger.debug(f"Generating button with url: {url}")
             return link_maker_button(
                 f"{point_name} Link",
                 button_id=button_id,
@@ -733,8 +728,8 @@ def register_callbacks(app):
                 button_id=button_id,
             ),
         )
-        logging.info(f"Generating path link for root ID {root_id}")
-        logging.info(f"Triggered by: {ctx.triggered_id}")
+        logger.debug(f"Generating path link for root ID {root_id}")
+        logger.debug(f"Triggered by: {ctx.triggered_id}")
         return link_process_generic(
             point_name=point_name,
             button_id=button_id,
