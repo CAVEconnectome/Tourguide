@@ -274,7 +274,7 @@ def layout(**kwargs):
             label="Set Annotation Tags",
             description="Choose or add tags (up to 6)",
             value=[
-                "seen",
+                "Seen",
             ],
             data=[
                 {"value": "done", "label": "Done"},

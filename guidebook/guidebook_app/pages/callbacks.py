@@ -759,3 +759,13 @@ def register_callbacks(app):
             tags=tags,
             auth_token=flask.g.get("auth_token"),
         )
+
+    @app.callback(
+        Output("compartment-radio", "value"),
+        Input("radio-axon", "disabled"),
+        State("compartment-radio", "value"),
+    )
+    def reset_compartment_radio(disabled, state):
+        if disabled:
+            return "all-cell"
+        return state
