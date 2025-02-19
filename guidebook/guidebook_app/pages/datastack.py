@@ -273,10 +273,12 @@ def layout(**kwargs):
             id="annotation-tag-list",
             label="Set Annotation Tags",
             description="Choose or add tags (up to 6)",
-            value=[],
+            value=[
+                "seen",
+            ],
             data=[
                 {"value": "done", "label": "Done"},
-                {"value": "fixed", "label": "Fixed"},
+                {"value": "seen", "label": "Seen"},
                 {"value": "correct", "label": "Correct"},
                 {"value": "error", "label": "Error"},
                 {"value": "unsure", "label": "Unsure"},

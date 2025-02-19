@@ -47,6 +47,7 @@ RESET_LINK_TRIGGERS = [
     "topo-restriction-select",
     "topo-restriction-input",
     "annotation-tag-list",
+    "curr-root-id",
 ]
 
 SHORT_PATH_LENGTH = 5_000
@@ -387,7 +388,7 @@ def register_callbacks(app):
 
     @app.callback(
         Output("end-point-link-card", "children"),
-        State("curr-root-id", "data"),
+        Input("curr-root-id", "data"),
         State("vertex-df", "data"),
         State("url", "pathname"),
         Input("compartment-radio", "value"),
@@ -452,7 +453,7 @@ def register_callbacks(app):
 
     @app.callback(
         Output("branch-point-link-card", "children"),
-        State("curr-root-id", "data"),
+        Input("curr-root-id", "data"),
         State("vertex-df", "data"),
         State("url", "pathname"),
         Input("compartment-radio", "value"),
@@ -517,7 +518,7 @@ def register_callbacks(app):
 
     @app.callback(
         Output("branch-end-point-link-card", "children"),
-        State("curr-root-id", "data"),
+        Input("curr-root-id", "data"),
         State("vertex-df", "data"),
         State("url", "pathname"),
         Input("compartment-radio", "value"),
@@ -677,7 +678,7 @@ def register_callbacks(app):
 
     @app.callback(
         Output("path-link-card", "children"),
-        State("curr-root-id", "data"),
+        Input("curr-root-id", "data"),
         State("vertex-df", "data"),
         State("url", "pathname"),
         Input("compartment-radio", "value"),
