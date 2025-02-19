@@ -8,11 +8,15 @@ import re
 from loguru import logger
 import os
 
-if os.environ.get("GUIDEBOOK_VERBOSE_LOG", "false") == "true":
-    import sys
+import sys
 
-    logger.remove()
-    logger.add(sys.stderr, colorize=True, level="DEBUG")
+if os.environ.get("GUIDEBOOK_VERBOSE_LOG", "false") == "true":
+    log_level = "DEBUG"
+else:
+    log_level = "WARNING"
+
+logger.remove()
+logger.add(sys.stderr, colorize=True, level=log_level)
 
 
 def configure_app(app):

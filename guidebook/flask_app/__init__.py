@@ -4,14 +4,12 @@ from .api import api_bp
 from ..guidebook_app import create_guidebook_app
 import os
 
-__version__ = "2.0.1"
-
 meta_viewport = {
     "name": "viewport",
     "content": "width=device-width, initial-scale=1, shrink-to-fit=no",
 }
 
-url_prefix = os.environ.get("URL_PREFIX", "/guidebook/app/")
+url_prefix = os.environ.get("GUIDEBOOK_APP_URL_PREFIX", "/app/")
 
 
 def create_app():
