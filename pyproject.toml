@@ -80,7 +80,7 @@ pre_commit_hooks = ['uv sync', 'git add uv.lock']
 post_commit_hooks = ["./.bmv-post-commit.sh"]
 
 [[tool.bumpversion.files]]
-filename = "src/__init__.py"
+filename = "guidebook/flask_app/__init__.py"
 
 [[tool.bumpversion.files]]
 filename = "pyproject.toml"
