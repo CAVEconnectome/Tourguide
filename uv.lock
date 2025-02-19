@@ -1881,7 +1881,7 @@ requires-dist = [
     { name = "orjson", specifier = ">=3.10.14" },
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "pcg-skel", specifier = ">=1.2.2" },
-    { name = "scipy" },
+    { name = "scipy", specifier = ">=1.13.1" },
 ]
 
 [package.metadata.requires-dev]
