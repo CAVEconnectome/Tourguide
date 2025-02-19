@@ -9,6 +9,8 @@ steps:
       - "-c"
       - |
         docker build -t gcr.io/$PROJECT_ID/guidebook:$TAG_NAME .
+    env:
+      - "DOCKER_BUILDKIT=1"
     timeout: 600s
   - name: "gcr.io/cloud-builders/docker"
     entrypoint: "bash"
