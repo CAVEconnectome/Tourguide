@@ -26,7 +26,7 @@ dependencies = [
     "orjson>=3.10.14",
     "pandas>=2.2.3",
     "pcg-skel>=1.2.2",
-    "scipy",
+    "scipy>=1.13.1",
     "loguru>=0.7.3",
 ]
 authors = [
@@ -80,7 +80,7 @@ pre_commit_hooks = ['uv sync', 'git add uv.lock']
 post_commit_hooks = ["./.bmv-post-commit.sh"]
 
 [[tool.bumpversion.files]]
-filename = "src//__init__.py"
+filename = "src/__init__.py"
 
 [[tool.bumpversion.files]]
 filename = "pyproject.toml"
