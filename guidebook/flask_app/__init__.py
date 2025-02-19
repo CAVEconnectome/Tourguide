@@ -4,7 +4,7 @@ from .api import api_bp
 from ..guidebook_app import create_guidebook_app
 import os
 
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 
 meta_viewport = {
     "name": "viewport",
