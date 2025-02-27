@@ -1105,6 +1105,7 @@ dependencies = [
     { name = "pandas" },
     { name = "pcg-skel" },
     { name = "scipy" },
+    { name = "werkzeug" },
 ]
 
 [package.dev-dependencies]
@@ -1145,6 +1146,7 @@ requires-dist = [
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "pcg-skel", specifier = ">=1.2.2" },
     { name = "scipy", specifier = ">=1.13.1" },
+    { name = "werkzeug", specifier = ">=3.0.6" },
 ]
 
 [package.metadata.requires-dev]

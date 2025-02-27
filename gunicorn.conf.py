@@ -13,3 +13,4 @@ timeout = int(os.environ.get("GUIDEBOOK_TIMEOUT", 90))
 keepalive = 10
 threads = 4
 worker_class = "gthread"
+forwarded_allow_ips = "*"

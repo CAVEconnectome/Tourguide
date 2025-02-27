@@ -28,6 +28,7 @@ dependencies = [
     "pcg-skel>=1.2.2",
     "scipy>=1.13.1",
     "loguru>=0.7.3",
+    "werkzeug>=3.0.6",
 ]
 authors = [
     { name = "Casey Schneider-Mizell", email = "caseys@alleninstitute.org" },

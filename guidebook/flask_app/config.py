@@ -1,3 +1,4 @@
+from werkzeug.middleware.proxy_fix import ProxyFix
 from middle_auth_client import (
     auth_required,
     auth_requires_permission,
@@ -20,7 +21,8 @@ logger.add(sys.stderr, colorize=True, level=log_level)
 
 
 def configure_app(app):
-    pass
+    app.config["APPLICATION_ROOT"] = "/guidebook"
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
 
 def protect_app(app):
