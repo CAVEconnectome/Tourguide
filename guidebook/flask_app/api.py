@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, g
 
 api_bp = Blueprint("main", __name__)
-__version__ = "2.0.4"
+__version__ = "2.0.5"
 
 
 @api_bp.route("/")
