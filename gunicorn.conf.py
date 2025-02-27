@@ -14,3 +14,4 @@ keepalive = 10
 threads = 4
 worker_class = "gthread"
 forwarded_allow_ips = "*"
+proxy_protocol = True
