@@ -2,6 +2,7 @@ import flask
 from typing import Optional
 from caveclient import CAVEclient
 from caveclient.tools.caching import CachedClient
+from urllib.parse import urlparse
 
 
 def make_client(
@@ -10,6 +11,8 @@ def make_client(
     auth_token: Optional[str] = None,
 ):
     "Generate the appropriate CAVEclient with info caching"
+    if len(urlparse(server_address).scheme) == 0:
+        server_address = f"https://{server_address}"
     return CachedClient(
         datastack_name=datastack_name,
         server_address=server_address,
@@ -21,6 +24,8 @@ def make_global_client(
     server_address: str,
     auth_token: Optional[str] = None,
 ):
+    if len(urlparse(server_address).scheme) == 0:
+        server_address = f"https://{server_address}"
     return CAVEclient(
         datastack_name=None,
         server_address=server_address,
