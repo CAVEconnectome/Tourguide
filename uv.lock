@@ -1086,7 +1086,7 @@ wheels = [
 
 [[package]]
 name = "guidebook"
-version = "2.0.5"
+version = "2.0.6"
 source = { editable = "." }
 dependencies = [
     { name = "cachetools" },
@@ -1141,7 +1141,7 @@ requires-dist = [
     { name = "meshparty", specifier = ">=1.18.0" },
     { name = "middle-auth-client", specifier = ">=3.18.1" },
     { name = "nglui", specifier = ">=3.8.0" },
-    { name = "numpy", specifier = ">=2.0.5" },
+    { name = "numpy", specifier = ">=2.0.6" },
     { name = "orjson", specifier = ">=3.10.14" },
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "pcg-skel", specifier = ">=1.2.2" },
