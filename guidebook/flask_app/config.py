@@ -19,9 +19,11 @@ else:
 logger.remove()
 logger.add(sys.stderr, colorize=True, level=log_level)
 
+GUIDEBOOK_PREFIX = "/guidebook"
+
 
 def configure_app(app):
-    app.config["APPLICATION_ROOT"] = "/guidebook"
+    app.config["APPLICATION_ROOT"] = GUIDEBOOK_PREFIX
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
 

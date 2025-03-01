@@ -14,4 +14,4 @@ keepalive = 10
 threads = 4
 worker_class = "gthread"
 forwarded_allow_ips = "*"
-proxy_protocol = True
+proxy_protocol = os.environ.get("GUIDEBOOK_GUNICORN_PROXY_PROTOCOL", False) == "true"

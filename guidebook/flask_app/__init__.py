@@ -1,5 +1,5 @@
 from flask import Flask
-from .config import configure_app, protect_app
+from .config import configure_app, protect_app, GUIDEBOOK_PREFIX
 from .api import api_bp
 from ..guidebook_app import create_guidebook_app
 import os
@@ -9,7 +9,7 @@ meta_viewport = {
     "content": "width=device-width, initial-scale=1, shrink-to-fit=no",
 }
 
-url_prefix = os.environ.get("GUIDEBOOK_APP_URL_PREFIX", "/app/")
+url_prefix = f"{GUIDEBOOK_PREFIX}/{os.environ.get('GUIDEBOOK_APP_URL_PREFIX', 'app/')}"
 
 
 def create_app():
@@ -30,4 +30,4 @@ def create_app():
 
 
 def register_blueprints(app: Flask):
-    app.register_blueprint(api_bp, url_prefix="")
+    app.register_blueprint(api_bp, url_prefix=GUIDEBOOK_PREFIX)
