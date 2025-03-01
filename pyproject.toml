@@ -7,7 +7,7 @@ packages = ["src"]
 
 [project]
 name = "guidebook"
-version = "2.0.6"
+version = "2.0.7"
 description = "Generate states based on neuron topology"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -22,7 +22,7 @@ dependencies = [
     "meshparty>=1.18.0",
     "middle-auth-client>=3.18.1",
     "nglui>=3.8.0",
-    "numpy>=2.0.6",
+    "numpy>=2.0.7",
     "orjson>=3.10.14",
     "pandas>=2.2.3",
     "pcg-skel>=1.2.2",
@@ -62,7 +62,7 @@ lint = [
 default-groups = ["dev", "docs", "lint", "profile"]
 
 [tool.bumpversion]
-current_version = "2.0.6"
+current_version = "2.0.7"
 parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
 serialize = ["{major}.{minor}.{patch}"]
 search = "{current_version}"
