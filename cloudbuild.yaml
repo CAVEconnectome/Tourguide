@@ -8,7 +8,7 @@ steps:
     args:
       - "-c"
       - |
-        docker build -t gcr.io/$PROJECT_ID/guidebook:$TAG_NAME .
+        docker build -t gcr.io/$PROJECT_ID/tourguide:$TAG_NAME .
     env:
       - "DOCKER_BUILDKIT=1"
     timeout: 600s
@@ -17,12 +17,12 @@ steps:
     args:
       [
         "-c",
-        "docker tag gcr.io/$PROJECT_ID/guidebook:$TAG_NAME $$USERNAME/guidebook:$TAG_NAME",
+        "docker tag gcr.io/$PROJECT_ID/tourguide:$TAG_NAME $$USERNAME/tourguide:$TAG_NAME",
       ]
     secretEnv: ["USERNAME"]
   - name: "gcr.io/cloud-builders/docker"
     entrypoint: "bash"
-    args: ["-c", "docker push $$USERNAME/guidebook:$TAG_NAME"]
+    args: ["-c", "docker push $$USERNAME/tourguide:$TAG_NAME"]
     secretEnv: ["USERNAME"]
 availableSecrets:
   secretManager:

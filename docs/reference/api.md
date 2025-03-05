@@ -2,7 +2,7 @@
 title: API documentation
 ---
 
-::: src.guidebookv2
+::: src.tourguide_lib
     options:
         show_source: false
         heading_level: 2

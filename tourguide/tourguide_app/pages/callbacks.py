@@ -10,7 +10,7 @@ from ..utils import (
     update_seen_id_list,
     convert_time_string_to_utc,
 )
-from ...guidebook_lib.processing import (
+from ...tourguide_lib.processing import (
     process_meshwork_to_dataframe,
     filter_dataframe,
     process_new_points,
@@ -20,7 +20,7 @@ from ...guidebook_lib.processing import (
     BRANCH_GROUP_COLUMN,
     LVL2_ID_COLUMN,
 )
-from ...guidebook_lib import states, lib_utils
+from ...tourguide_lib import states, lib_utils
 from pcg_skel import get_meshwork_from_client
 import pandas as pd
 import time
@@ -123,7 +123,7 @@ def link_process_generic(
 
     client = lib_utils.make_client(
         datastack_name=datastack_name,
-        server_address=os.environ.get("GUIDEBOOK_SERVER_ADDRESS"),
+        server_address=os.environ.get("TOURGUIDE_SERVER_ADDRESS"),
         auth_token=auth_token,
     )
     try:
@@ -249,12 +249,12 @@ def register_callbacks(app):
     @app.callback(Output("header-bar", "children"), Input("url", "pathname"))
     def set_header_text(url):
         return html.H2(
-            f"Guidebook — {get_datastack(url)}",
+            f"TourGuide Morphology — {get_datastack(url)}",
             className="text-center",
         )
 
     @app.callback(
-        Output("guidebook-root-id", "value", allow_duplicate=True),
+        Output("tourguide-root-id", "value", allow_duplicate=True),
         Input("url", "search"),
         prevent_initial_call="initial_duplicate",
     )
@@ -284,9 +284,9 @@ def register_callbacks(app):
         Output("radio-axon", "disabled"),
         Output("radio-dendrite", "disabled"),
         Output("url", "search"),
-        Output("guidebook-root-id", "value", allow_duplicate=True),
+        Output("tourguide-root-id", "value", allow_duplicate=True),
         [
-            State("guidebook-root-id", "value"),
+            State("tourguide-root-id", "value"),
             State("url", "pathname"),
             Input("submit-button", "n_clicks"),
             Input("update-id-button", "n_clicks"),
@@ -319,7 +319,7 @@ def register_callbacks(app):
             )
         client = lib_utils.make_client(
             get_datastack(url),
-            server_address=os.environ.get("GUIDEBOOK_SERVER_ADDRESS"),
+            server_address=os.environ.get("TOURGUIDE_SERVER_ADDRESS"),
             auth_token=flask.g.get("auth_token"),
         )
         if ctx.triggered_id == "update-id-button":

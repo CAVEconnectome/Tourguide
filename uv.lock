@@ -1085,89 +1085,6 @@ wheels = [
 ]
 
 [[package]]
-name = "guidebook"
-version = "2.0.8"
-source = { editable = "." }
-dependencies = [
-    { name = "cachetools" },
-    { name = "caveclient" },
-    { name = "cloud-volume" },
-    { name = "cryptography" },
-    { name = "dash" },
-    { name = "dash-mantine-components" },
-    { name = "flask" },
-    { name = "loguru" },
-    { name = "meshparty" },
-    { name = "middle-auth-client" },
-    { name = "nglui" },
-    { name = "numpy" },
-    { name = "orjson" },
-    { name = "pandas" },
-    { name = "pcg-skel" },
-    { name = "scipy" },
-    { name = "werkzeug" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "bump-my-version" },
-    { name = "ipykernel" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-]
-docs = [
-    { name = "mkdocs" },
-    { name = "mkdocs-material" },
-    { name = "mkdocstrings", extra = ["python"] },
-]
-lint = [
-    { name = "ruff" },
-]
-profile = [
-    { name = "pyinstrument" },
-    { name = "scalene" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "cachetools", specifier = ">=5.5.0" },
-    { name = "caveclient", specifier = ">=7.4.3" },
-    { name = "cloud-volume", specifier = ">=11.1.3" },
-    { name = "cryptography", specifier = ">=44.0.0" },
-    { name = "dash", specifier = ">=2.18.2,<3.0.0" },
-    { name = "dash-mantine-components", specifier = ">=0.15.1" },
-    { name = "flask", specifier = ">=3.0.0" },
-    { name = "loguru", specifier = ">=0.7.3" },
-    { name = "meshparty", specifier = ">=1.18.0" },
-    { name = "middle-auth-client", specifier = ">=3.18.1" },
-    { name = "nglui", specifier = ">=3.8.0" },
-    { name = "numpy", specifier = ">=2.0.8" },
-    { name = "orjson", specifier = ">=3.10.14" },
-    { name = "pandas", specifier = ">=2.2.3" },
-    { name = "pcg-skel", specifier = ">=1.2.2" },
-    { name = "scipy", specifier = ">=1.13.1" },
-    { name = "werkzeug", specifier = ">=3.0.6" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "bump-my-version" },
-    { name = "ipykernel" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-]
-docs = [
-    { name = "mkdocs" },
-    { name = "mkdocs-material" },
-    { name = "mkdocstrings", extras = ["python"] },
-]
-lint = [{ name = "ruff" }]
-profile = [
-    { name = "pyinstrument" },
-    { name = "scalene" },
-]
-
-[[package]]
 name = "h11"
 version = "0.14.0"
 source = { registry = "https://pypi.org/simple" }
@@ -3309,6 +3226,89 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/2b/ae/c1b22d4524b0e10da2f29a176fb2890386f7bd1f63aacf186444873a88a0/tornado-6.4.2-cp38-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:932d195ca9015956fa502c6b56af9eb06106140d844a335590c1ec7f5277d10c", size = 437261 },
     { url = "https://files.pythonhosted.org/packages/b5/25/36dbd49ab6d179bcfc4c6c093a51795a4f3bed380543a8242ac3517a1751/tornado-6.4.2-cp38-abi3-win32.whl", hash = "sha256:2876cef82e6c5978fde1e0d5b1f919d756968d5b4282418f3146b79b58556482", size = 438463 },
     { url = "https://files.pythonhosted.org/packages/61/cc/58b1adeb1bb46228442081e746fcdbc4540905c87e8add7c277540934edb/tornado-6.4.2-cp38-abi3-win_amd64.whl", hash = "sha256:908b71bf3ff37d81073356a5fadcc660eb10c1476ee6e2725588626ce7e5ca38", size = 438907 },
+]
+
+[[package]]
+name = "tourguide"
+version = "2.0.8"
+source = { editable = "." }
+dependencies = [
+    { name = "cachetools" },
+    { name = "caveclient" },
+    { name = "cloud-volume" },
+    { name = "cryptography" },
+    { name = "dash" },
+    { name = "dash-mantine-components" },
+    { name = "flask" },
+    { name = "loguru" },
+    { name = "meshparty" },
+    { name = "middle-auth-client" },
+    { name = "nglui" },
+    { name = "numpy" },
+    { name = "orjson" },
+    { name = "pandas" },
+    { name = "pcg-skel" },
+    { name = "scipy" },
+    { name = "werkzeug" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "bump-my-version" },
+    { name = "ipykernel" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+]
+docs = [
+    { name = "mkdocs" },
+    { name = "mkdocs-material" },
+    { name = "mkdocstrings", extra = ["python"] },
+]
+lint = [
+    { name = "ruff" },
+]
+profile = [
+    { name = "pyinstrument" },
+    { name = "scalene" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "cachetools", specifier = ">=5.5.0" },
+    { name = "caveclient", specifier = ">=7.4.3" },
+    { name = "cloud-volume", specifier = ">=11.1.3" },
+    { name = "cryptography", specifier = ">=44.0.0" },
+    { name = "dash", specifier = ">=2.18.2,<3.0.0" },
+    { name = "dash-mantine-components", specifier = ">=0.15.1" },
+    { name = "flask", specifier = ">=3.0.0" },
+    { name = "loguru", specifier = ">=0.7.3" },
+    { name = "meshparty", specifier = ">=1.18.0" },
+    { name = "middle-auth-client", specifier = ">=3.18.1" },
+    { name = "nglui", specifier = ">=3.8.0" },
+    { name = "numpy", specifier = ">=2.0.8" },
+    { name = "orjson", specifier = ">=3.10.14" },
+    { name = "pandas", specifier = ">=2.2.3" },
+    { name = "pcg-skel", specifier = ">=1.2.2" },
+    { name = "scipy", specifier = ">=1.13.1" },
+    { name = "werkzeug", specifier = ">=3.0.6" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "bump-my-version" },
+    { name = "ipykernel" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+]
+docs = [
+    { name = "mkdocs" },
+    { name = "mkdocs-material" },
+    { name = "mkdocstrings", extras = ["python"] },
+]
+lint = [{ name = "ruff" }]
+profile = [
+    { name = "pyinstrument" },
+    { name = "scalene" },
 ]
 
 [[package]]

@@ -1,10 +1,10 @@
 from typing import Optional
-from ..guidebook_lib.lib_utils import make_client, make_global_client
+from ..tourguide_lib.lib_utils import make_client, make_global_client
 import dash_mantine_components as dmc
 import pandas as pd
 import re
 import numpy as np
-from ..guidebook_lib.processing import LVL2_ID_COLUMN
+from ..tourguide_lib.processing import LVL2_ID_COLUMN
 from datetime import datetime, timezone, timedelta
 
 

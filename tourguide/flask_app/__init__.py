@@ -1,7 +1,7 @@
 from flask import Flask
-from .config import configure_app, protect_app, GUIDEBOOK_PREFIX
+from .config import configure_app, protect_app, TOURGUIDE_PREFIX
 from .api import api_bp
-from ..guidebook_app import create_guidebook_app
+from ..tourguide_app import create_tourguide_app
 import os
 
 meta_viewport = {
@@ -9,7 +9,7 @@ meta_viewport = {
     "content": "width=device-width, initial-scale=1, shrink-to-fit=no",
 }
 
-url_prefix = f"{GUIDEBOOK_PREFIX}/{os.environ.get('GUIDEBOOK_APP_URL_PREFIX', 'app/')}"
+url_prefix = f"{TOURGUIDE_PREFIX}/{os.environ.get('TOURGUIDE_APP_URL_PREFIX', 'app/')}"
 
 
 def create_app():
@@ -19,8 +19,8 @@ def create_app():
     configure_app(app)
     register_blueprints(app)
     with app.app_context():
-        dapp = create_guidebook_app(
-            "guidebook-app",
+        dapp = create_tourguide_app(
+            "tourguide-app",
             server=app,
             url_base_pathname=url_prefix,
             meta_tags=[meta_viewport],
@@ -30,4 +30,4 @@ def create_app():
 
 
 def register_blueprints(app: Flask):
-    app.register_blueprint(api_bp, url_prefix=GUIDEBOOK_PREFIX)
+    app.register_blueprint(api_bp, url_prefix=TOURGUIDE_PREFIX)

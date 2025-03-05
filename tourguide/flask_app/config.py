@@ -11,7 +11,7 @@ import os
 
 import sys
 
-if os.environ.get("GUIDEBOOK_VERBOSE_LOG", "false") == "true":
+if os.environ.get("TOURGUIDE_VERBOSE_LOG", "false") == "true":
     log_level = "DEBUG"
 else:
     log_level = "WARNING"
@@ -19,11 +19,11 @@ else:
 logger.remove()
 logger.add(sys.stderr, colorize=True, level=log_level)
 
-GUIDEBOOK_PREFIX = "/tourguide"
+TOURGUIDE_PREFIX = "/tourguide"
 
 
 def configure_app(app):
-    app.config["APPLICATION_ROOT"] = GUIDEBOOK_PREFIX
+    app.config["APPLICATION_ROOT"] = TOURGUIDE_PREFIX
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
 

@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import caveclient
 
-from ..guidebook_app import utils
+from ..tourguide_app import utils
 from . import processing
 
 DEFAULT_SEGMENTATION_VIEW_KWS = {

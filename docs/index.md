@@ -1,3 +1,3 @@
-# GuidebookV2
+# TourGuide
 
-Docs for GuidebookV2.
+Docs for TourGuide

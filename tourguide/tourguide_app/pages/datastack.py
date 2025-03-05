@@ -22,7 +22,7 @@ def layout(**kwargs):
         [
             dmc.GridCol(
                 dmc.NumberInput(
-                    id="guidebook-root-id",
+                    id="tourguide-root-id",
                     placeholder="Enter a root id",
                     hideControls=True,
                     allowNegative=False,

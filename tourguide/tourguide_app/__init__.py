@@ -15,7 +15,7 @@ import os
 pages_folder = pathlib.Path(__file__).parent.absolute().joinpath("pages")
 
 
-def create_guidebook_app(name=__name__, config={}, **kwargs):
+def create_tourguide_app(name=__name__, config={}, **kwargs):
     dapp = Dash(
         name,
         use_pages=True,

@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 packages = ["src"]
 
 [project]
-name = "guidebook"
+name = "tourguide"
 version = "2.0.8"
 description = "Generate states based on neuron topology"
 readme = "README.md"
@@ -81,7 +81,7 @@ pre_commit_hooks = ['uv sync', 'git add uv.lock']
 post_commit_hooks = ["./.bmv-post-commit.sh"]
 
 [[tool.bumpversion.files]]
-filename = "guidebook/flask_app/api.py"
+filename = "tourguide/flask_app/api.py"
 
 [[tool.bumpversion.files]]
 filename = "pyproject.toml"
@@ -101,7 +101,7 @@ cmd = "uv run bump-my-version bump"
 help = "Bump the version number in the project. Use with 'patch', 'minor', or 'major' to specify the version change."
 
 [tool.poe.tasks.test]
-cmd = "uv run pytest --cov=guidebook tests"
+cmd = "uv run pytest --cov=tourguide tests"
 help = "Run pytest with code coverage."
 
 [tool.poe.tasks.doc-preview]
