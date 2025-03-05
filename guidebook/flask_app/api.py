@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, g
 from .config import GUIDEBOOK_PREFIX
 
 api_bp = Blueprint("main", __name__)
-__version__ = "2.0.7"
+__version__ = "2.0.8"
 
 
 @api_bp.route("/")
