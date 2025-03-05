@@ -19,7 +19,7 @@ else:
 logger.remove()
 logger.add(sys.stderr, colorize=True, level=log_level)
 
-GUIDEBOOK_PREFIX = "/guidebook"
+GUIDEBOOK_PREFIX = "/tourguide"
 
 
 def configure_app(app):

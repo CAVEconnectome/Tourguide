@@ -3,10 +3,11 @@ from dash import html, dcc
 import dash_mantine_components as dmc
 from ..utils import link_maker_button
 from datetime import datetime
+from ...flask_app.api import version
 
 
 def title(datastack_name=None):
-    return f"Guidebook Morphology Explorer: {datastack_name}"
+    return f"Tour Guide Morphology v{version}: {datastack_name}"
 
 
 def layout(**kwargs):
