@@ -1,6 +1,6 @@
 from flask import Flask
 from .config import configure_app, protect_app, TOURGUIDE_PREFIX
-from .api import api_bp
+from .api import api_bp, cache
 from ..tourguide_app import create_tourguide_app
 import os
 
@@ -26,6 +26,7 @@ def create_app():
             meta_tags=[meta_viewport],
         )
     protect_app(dapp)
+    cache.init_app(app)
     return app
 
 
