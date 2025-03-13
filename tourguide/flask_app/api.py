@@ -27,8 +27,8 @@ def has_skeleton_service(datastack_name, gclient):
     return info.get("skeleton_source") is not None
 
 
-@auth_required
 @api_bp.route("/")
+@auth_required
 def index():
     gclient = make_global_client(
         server_address=os.environ.get("TOURGUIDE_SERVER_ADDRESS"),
