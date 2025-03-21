@@ -7,7 +7,7 @@ from ..tourguide_lib.lib_utils import make_global_client
 from .config import TOURGUIDE_PREFIX
 
 api_bp = Blueprint("main", __name__)
-__version__ = "2.2.2"
+__version__ = "2.2.3"
 
 cache = Cache(
     config={
