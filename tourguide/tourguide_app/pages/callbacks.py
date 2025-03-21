@@ -28,7 +28,10 @@ import os
 from urllib.parse import parse_qs, urlparse, urlencode
 from datetime import datetime, timezone
 
-from ...flask_app.config import logger
+# from ...flask_app.config import logger
+import logging
+
+logger = logging.getLogger("gunicorn.access")
 
 VERTEX_LIST_COLS = ["lvl2_id"]
 
@@ -144,6 +147,7 @@ def link_process_generic(
 
     if not is_path:
         logger.debug(f"Working on point links")
+        logger.info(f"Generating point link for root ID {root_id}")
         vertex_df = filter_dataframe(
             root_id=int(root_id),
             vertex_df=rehydrate_dataframe(vertex_data, list_columns=[LVL2_ID_COLUMN]),
@@ -179,6 +183,7 @@ def link_process_generic(
                 url=url,
             )
     else:
+        logger.info(f"Generating path link for root ID {root_id}")
         if ignore_short_paths:
             min_path_length = SHORT_PATH_LENGTH
         else:
@@ -343,6 +348,7 @@ def register_callbacks(app):
             vertex_df = pd.DataFrame(columns=VERTEX_COLUMNS)
             message_text = str(e)
             message_color = "red"
+            logger.warning(f"Error processing root ID {root_id}: {e}")
             return (
                 None,
                 stash_dataframe(vertex_df),
@@ -370,6 +376,7 @@ def register_callbacks(app):
             message_text = f"Pre-processed root ID {root_id} with {len(vertex_df)} vertices in {time.time() - t0:.2f} seconds."
             message_color = "green"
         new_seen_lvl2_ids = update_seen_id_list(seen_lvl2_ids, vertex_df)
+        logger.info(f"Processed root ID {root_id} in {time.time() - t0:.2f} seconds")
         return (
             str(root_id),
             stash_dataframe(vertex_df, list_cols=[LVL2_ID_COLUMN]),
@@ -729,8 +736,8 @@ def register_callbacks(app):
                 button_id=button_id,
             ),
         )
-        logger.debug(f"Generating path link for root ID {root_id}")
-        logger.debug(f"Triggered by: {ctx.triggered_id}")
+
+        logger.debug(f"Path triggered by: {ctx.triggered_id}")
         return link_process_generic(
             point_name=point_name,
             button_id=button_id,

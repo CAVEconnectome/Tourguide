@@ -30,6 +30,7 @@ dependencies = [
     "loguru>=0.7.3",
     "werkzeug>=3.0.6",
     "flask-caching>=2.3.1",
+    "gunicorn>=23.0.0",
 ]
 authors = [
     { name = "Casey Schneider-Mizell", email = "caseys@alleninstitute.org" },
