@@ -5,23 +5,24 @@ RUN apt-get update && apt-get install -y gcc
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 ENV UV_PYTHON_DOWNLOADS=0
-ENV GIT_SSL_NO_VERIFY=1
 
 # Install the project's dependencies using the lockfile and settings
 WORKDIR /app
 
+# Copy only the necessary files for dependency installation
+COPY uv.lock pyproject.toml ./
+
 RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync --frozen --no-install-project --no-default-groups
 
-
-ADD . /app
+COPY . ./
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-default-groups
+uv sync --frozen --no-default-groups
 
 FROM python:3.12-slim-bookworm
-COPY --from=builder --chown=root:root /app /app
+COPY --from=builder --chown=root:root /app/.venv /app/.venv
+COPY --from=builder --chown=root:root /app/*.py /app/
+COPY --from=builder --chown=root:root /app/tourguide /app/tourguide
 
 # Install the project into `/app`
 RUN mkdir -p /root/.cloudvolume/secrets
