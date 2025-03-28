@@ -1587,6 +1587,7 @@ dependencies = [
     { name = "tables" },
     { name = "trimesh", extra = ["easy"] },
 ]
+sdist = { url = "https://files.pythonhosted.org/packages/b3/c9/edb1411ca8e52cd85cd159784cd91c88f26283b3bbead7ff76275119a00b/meshparty-2.0.1.tar.gz", hash = "sha256:25c1f18bdf2a8f5cdee5ce9d1d746e0db09615a6bae4df84bd35c9a86d84946e", size = 83108975 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a4/09/089e1173c0a8432b3608873d1e7a7f5ce7319a37046e76ba0cf76b406d9e/meshparty-2.0.1-py3-none-any.whl", hash = "sha256:9f25ffc90aaa55b7fbfc44d122f91194791a1ba09d1a282552dd30af38e2e5f0", size = 104099 },
 ]
@@ -3182,7 +3183,7 @@ wheels = [
 
 [[package]]
 name = "tourguide"
-version = "2.2.4"
+version = "2.2.5"
 source = { editable = "." }
 dependencies = [
     { name = "cachetools" },
