@@ -3,7 +3,7 @@ import flask
 from flask_caching import Cache
 from flask import Blueprint, render_template, request
 from middle_auth_client import auth_required
-from ..tourguide_lib.lib_utils import make_global_client
+from ..tourguide_lib.lib_utils import make_global_client, ServerIncompatibilityError
 from .config import TOURGUIDE_PREFIX
 
 api_bp = Blueprint("main", __name__)
@@ -27,6 +27,19 @@ def has_skeleton_service(datastack_name, gclient):
     return info.get("skeleton_source") is not None
 
 
+def mirror_key(datastack_name, gclient):
+    return datastack_name
+
+
+@cache.cached(key_prefix="get_image_mirrors", make_cache_key=mirror_key)
+def get_image_mirrors(datastack_name, gclient):
+    try:
+        mirrors = gclient.info.get_image_mirrors(datastack_name=datastack_name)
+    except ServerIncompatibilityError:
+        mirrors = []
+    return mirrors
+
+
 @api_bp.route("/")
 @auth_required
 def index():
@@ -38,6 +51,7 @@ def index():
     show_datastacks = sorted(
         [ds for ds in datastacks if has_skeleton_service(ds, gclient)]
     )
+    # mirrors = {ds: gclient.info.get_for ds in datastacks]
     base_url = f"{request.url_root.rstrip('/')}/{TOURGUIDE_PREFIX.strip('/')}"
     return render_template(
         "index.html",
