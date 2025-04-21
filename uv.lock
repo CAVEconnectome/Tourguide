@@ -270,7 +270,7 @@ wheels = [
 
 [[package]]
 name = "caveclient"
-version = "7.6.2"
+version = "7.7.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "attrs" },
@@ -285,9 +285,9 @@ dependencies = [
     { name = "requests" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/01/dc/a278efea542d7657db5d05a7cb17d58b344f59ddd9047346e265bd1a8096/caveclient-7.6.2.tar.gz", hash = "sha256:28b676ae6a5bf28eeb713161c806d0ab71ae9a1923ab211fabb264f725851f21", size = 3223619 }
+sdist = { url = "https://files.pythonhosted.org/packages/fd/20/ac990dba21cb9043d25784630df76fac51025726f37e259d8628e388108a/caveclient-7.7.0.tar.gz", hash = "sha256:9e1a614a7273ffd5edfc7549a3adbed4dc1dfa3fd936bb376305ba2d13501be7", size = 3225010 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/80/76/a26a3abcb55b10ff3de62ed8cd79b340b7ed5300d8ba690c950624ba0cf5/caveclient-7.6.2-py3-none-any.whl", hash = "sha256:912922dd94d40a2edd2bbc8dc5a3276d5decb2ba23016d2c82be0adce8ff7b62", size = 86482 },
+    { url = "https://files.pythonhosted.org/packages/b4/1e/282b14d8a226f86058da541b3781a03d6700ecfbe8662c688471f18ef0f7/caveclient-7.7.0-py3-none-any.whl", hash = "sha256:4f8684aadfec6bd6b21b1b02f2f6f3dbebcde1fd63671bbb557ab1e4c2398a1e", size = 86797 },
 ]
 
 [[package]]
@@ -764,7 +764,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/f5/1b/c9ba28e5cf3c65327
 wheels = [
     { url = "https://files.pythonhosted.org/packages/27/dd/0897d6f3b32f0644e4e6e6942e0428d6f340619f3837bc51eabb4226f3a6/dracopy-1.5.0-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:fac218b6de5d469ddb655e5af8c7003a98346731a846a39c688bd6f3858935aa", size = 2963251 },
     { url = "https://files.pythonhosted.org/packages/a2/4b/a6bc3350a44afeba23ed18d9eac82b451f8ae2dd303fc63c640166f6444c/dracopy-1.5.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:f457422e6579f7ed90e0615c52018ed390d953603f231762b50c0da84dcb813d", size = 2569316 },
-    { url = "https://files.pythonhosted.org/packages/9a/4c/d6c628f8f03875d790df8623b2a26ab3e5a91d6fe47879f0cbe02f25b508/dracopy-1.5.0-cp312-cp312-macosx_11_0_universal2.whl", hash = "sha256:c2b3e95656e398c5b91558a492e02affdf1d89a44f2366a5fc0f167f0876e105", size = 140339 },
     { url = "https://files.pythonhosted.org/packages/63/48/69e0b403b74d0e87372357048c07e9e84a7bd796b4e65a21796fd71cc5fc/dracopy-1.5.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:785c34f8b5b09d7eed8672390aa8218353a8e1d17454098706a242cf556bc699", size = 4553474 },
     { url = "https://files.pythonhosted.org/packages/31/7c/a329c9347a8a8955f32d603fd593f0ecc6f5a8df4978ee14907bf72b20ee/dracopy-1.5.0-cp312-cp312-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:b3d65258183834c67b0daae455e2c1461005113aa53c402e1fae228b77bbdd22", size = 4895874 },
     { url = "https://files.pythonhosted.org/packages/fd/b6/e55db46e117f2f9867996598e4b07afc995e8394930afc5ee2026bb5e7ec/dracopy-1.5.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5cfb2b932c06d7c2cac6068827e93c3f15caf8fd92868a22ef403140be8abaa4", size = 4652079 },
@@ -772,7 +771,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/d4/37/595b627ca3f19387cc5039c9c1abf6272090f285c7b234ecf62cf956a518/dracopy-1.5.0-cp312-cp312-win_amd64.whl", hash = "sha256:a22f33f1ff5c82de2ec9e297e576bf8be3b75d30c3228f2206caea1a88db0bfc", size = 4943610 },
     { url = "https://files.pythonhosted.org/packages/cc/e5/89debb37d9f57132f0938c779cd7186b8c0901b10afc279abd080d01bdea/dracopy-1.5.0-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:15aa99714562888cb1d6a2a837c27fe74d5d6aed3a594746919ba396f6ec7c3b", size = 2960792 },
     { url = "https://files.pythonhosted.org/packages/53/60/1445090144f97b309f0b9c1a640787df980f756126ed331f150593a25762/dracopy-1.5.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:03aec408ced82abc963c282ae0c7b39fcd0fe639810d9b2962031f3160342e4b", size = 2566737 },
-    { url = "https://files.pythonhosted.org/packages/47/26/08e1ec9f064cc92e3502f39641ea1181daa731296302d0c684c777bf62b3/dracopy-1.5.0-cp313-cp313-macosx_11_0_universal2.whl", hash = "sha256:ce8b5699622ac194eb5490254e96ec54946d20f0154787695178a854c6d09858", size = 138757 },
     { url = "https://files.pythonhosted.org/packages/08/7d/b586c9999664888b805acd0577ad8273cfda38fdb65b36715ea8c40c95d6/dracopy-1.5.0-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:26ce2e93a6c3a6f86ff961e236002c43858c27dbe2745e815c9495a27cd01179", size = 4555214 },
     { url = "https://files.pythonhosted.org/packages/fb/87/4d6f7a80b2eab806b7c3c888679047471e0d4ad57e5cbf8b6e9c924834c6/dracopy-1.5.0-cp313-cp313-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:4ac18f65d0c61c0dbbafcd5a04e4ed127d66fd5573fb5c50071a2b26e2eaa9f0", size = 4897881 },
     { url = "https://files.pythonhosted.org/packages/a2/be/f33c411b365b02f15cc6052a0a5781e63a6390fa3b92d57db09cacdfb11f/dracopy-1.5.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a053fc924fd819410691b892c121264bb4e6057d2f640e4b789999a9af40b4ee", size = 4654887 },
@@ -2250,6 +2248,15 @@ wheels = [
 ]
 
 [[package]]
+name = "prometheus-client"
+version = "0.21.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/62/14/7d0f567991f3a9af8d1cd4f619040c93b68f09a02b6d0b6ab1b2d1ded5fe/prometheus_client-0.21.1.tar.gz", hash = "sha256:252505a722ac04b0456be05c05f75f45d760c2911ffc45f2a06bcaed9f3ae3fb", size = 78551 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ff/c2/ab7d37426c179ceb9aeb109a85cda8948bb269b7561a0be870cc656eefe4/prometheus_client-0.21.1-py3-none-any.whl", hash = "sha256:594b45c410d6f4f8888940fe80b5cc2521b305a1fafe1c58609ef715a001f301", size = 54682 },
+]
+
+[[package]]
 name = "prompt-toolkit"
 version = "3.0.50"
 source = { registry = "https://pypi.org/simple" }
@@ -3203,6 +3210,7 @@ dependencies = [
     { name = "orjson" },
     { name = "pandas" },
     { name = "pcg-skel" },
+    { name = "prometheus-client" },
     { name = "scipy" },
     { name = "werkzeug" },
 ]
@@ -3230,7 +3238,7 @@ profile = [
 [package.metadata]
 requires-dist = [
     { name = "cachetools", specifier = ">=5.5.0" },
-    { name = "caveclient", specifier = ">=7.4.3" },
+    { name = "caveclient", specifier = ">=7.7.0" },
     { name = "cloud-volume", specifier = ">=11.1.3" },
     { name = "cryptography", specifier = ">=44.0.0" },
     { name = "dash", specifier = ">=2.18.2,<3.0.0" },
@@ -3246,6 +3254,7 @@ requires-dist = [
     { name = "orjson", specifier = ">=3.10.14" },
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "pcg-skel", specifier = ">=1.2.2" },
+    { name = "prometheus-client", specifier = ">=0.21.1" },
     { name = "scipy", specifier = ">=1.13.1" },
     { name = "werkzeug", specifier = ">=3.0.6" },
 ]
