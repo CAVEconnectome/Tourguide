@@ -32,4 +32,4 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 WORKDIR /app
 
-CMD ["gunicorn", "--workers=2", "run:app"]
+CMD ["gunicorn", "run:app"]

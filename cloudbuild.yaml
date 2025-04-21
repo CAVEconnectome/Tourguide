@@ -24,6 +24,14 @@ steps:
     entrypoint: "bash"
     args: ["-c", "docker push $$USERNAME/tourguide:$TAG_NAME"]
     secretEnv: ["USERNAME"]
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["build", "-t", "$$USERNAME/tourguide-metrics:$TAG_NAME", "-f", "Dockerfile.metrics", "."]
+    env:
+      - "DOCKER_BUILDKIT=1"
+    secretEnv: ["USERNAME"]
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "$$USERNAME/tourguide-metrics:$TAG_NAME"]
+    secretEnv: ["USERNAME"]
 availableSecrets:
   secretManager:
     - versionName: projects/$PROJECT_ID/secrets/docker-password/versions/1

@@ -1,6 +1,8 @@
 # custom_logger.py
 import logging
 import re
+
+import statsd
 from gunicorn import glogging
 
 
@@ -28,13 +30,48 @@ class DashFilter(logging.Filter):
         return not bool(self.dash_update_pattern.search(log_message))
 
 
+class StatsDClient:
+    _instance = None
+
+    @classmethod
+    def get_instance(cls, host, port=8125, prefix=None):
+        # Create a unique instance key based on all parameters
+        instance_key = f"{host}:{port}:{prefix}"
+
+        if cls._instance is None or cls._instance.get("key") != instance_key:
+            host_parts = host.split(":") if host else ["localhost"]
+            if len(host_parts) > 1:
+                host, port = host_parts[0], int(host_parts[1])
+
+            logger = logging.getLogger("statsd.client")
+            logger.setLevel(logging.DEBUG)
+            logger.debug(
+                f"Initializing StatsD client: host={host}, port={port}, prefix={prefix}"
+            )
+
+            try:
+                client = statsd.StatsClient(host=host, port=port, prefix=prefix)
+                logger.debug("StatsD client initialized successfully")
+                cls._instance = {"client": client, "key": instance_key}
+            except Exception as e:
+                logger.error(f"Failed to initialize StatsD client: {e}")
+                cls._instance = None
+
+        return cls._instance["client"] if cls._instance else None
+
+
+# Now enhance the CustomGunicornLogger to use this tracker
 class CustomGunicornLogger(glogging.Logger):
+    def __init__(self, cfg):
+        super().__init__(cfg)
+
     def setup(self, cfg):
         # Call the parent setup
         super().setup(cfg)
 
-        # Add our filter to the access log
-        logger = logging.getLogger("gunicorn.access")
-        logger.addFilter(KubeProbeFilter())
-        logger.addFilter(DashFilter())
-        logger.debug("Added KubeProbeFilter")
+        # Add our filters to the access log
+        print("Setting up custom filters")
+        access_logger = logging.getLogger("gunicorn.access")
+        access_logger.addFilter(KubeProbeFilter())
+        access_logger.addFilter(DashFilter())
+        access_logger.debug("Custom filters added to access logger")

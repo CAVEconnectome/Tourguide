@@ -5,6 +5,7 @@ from middle_auth_client import (
 )
 from urllib import parse
 import re
+from prometheus_client import Gauge
 
 from loguru import logger
 import os
@@ -20,11 +21,36 @@ logger.remove()
 logger.add(sys.stderr, colorize=True, level=log_level)
 
 TOURGUIDE_PREFIX = "/tourguide"
+ACTIVE_REQUESTS = Gauge(
+    "tourguide_active_requests",
+    "Number of active requests being processed",
+    multiprocess_mode="livesum",
+)
+
+prom_dir = os.environ.get("PROMETHEUS_MULTIPROC_DIR")
+if prom_dir:
+    os.makedirs(prom_dir, exist_ok=True)
+    # Initialize the multiprocess collector
+    from prometheus_client import multiprocess
+    from prometheus_client.core import CollectorRegistry
+
+    registry = CollectorRegistry()
+    multiprocess.MultiProcessCollector(registry)
 
 
 def configure_app(app):
     app.config["APPLICATION_ROOT"] = TOURGUIDE_PREFIX
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
+    @app.before_request
+    def before_request():
+        ACTIVE_REQUESTS.inc()
+
+    @app.teardown_request
+    def teardown_request(exception=None):
+        ACTIVE_REQUESTS.dec()
+        if exception:
+            logger.error(f"Request failed: {exception}")
 
 
 def protect_app(app):

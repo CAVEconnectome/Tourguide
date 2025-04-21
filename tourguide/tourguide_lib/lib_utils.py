@@ -2,6 +2,7 @@ import flask
 from typing import Optional
 from caveclient import CAVEclient
 from caveclient.tools.caching import CachedClient
+from caveclient.base import ServerIncompatibilityError
 from urllib.parse import urlparse
 
 
