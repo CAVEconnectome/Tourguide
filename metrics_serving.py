@@ -1,5 +1,4 @@
 import os
-import time
 from flask import Flask
 from prometheus_client import make_wsgi_app, multiprocess, CollectorRegistry
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
