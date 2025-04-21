@@ -26,6 +26,8 @@ steps:
     secretEnv: ["USERNAME"]
   - name: "gcr.io/cloud-builders/docker"
     args: ["build", "-t", "$$USERNAME/tourguide-metrics:$TAG_NAME", "-f", "Dockerfile.metrics", "."]
+    env:
+      - "DOCKER_BUILDKIT=1"
     secretEnv: ["USERNAME"]
   - name: "gcr.io/cloud-builders/docker"
     args: ["push", "$$USERNAME/tourguide-metrics:$TAG_NAME"]
