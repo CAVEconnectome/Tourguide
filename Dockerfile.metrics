@@ -1,5 +1,4 @@
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS builder
-RUN apt-get update && apt-get install -y gcc
 
 # Enable bytecode compilation
 ENV UV_COMPILE_BYTECODE=1
@@ -10,13 +9,15 @@ WORKDIR /app
 
 COPY uv.lock .
 
-RUN FLASK_VERSION=$(grep -A 3 '"flask"' uv.lock | grep version | head -1 | sed 's/.*"version": "\([^"]*\)".*/\1/') && \
-    GUNICORN_VERSION=$(grep -A 3 '"gunicorn"' uv.lock | grep version | head -1 | sed 's/.*"version": "\([^"]*\)".*/\1/') && \
-    PROMETHEUS_VERSION=$(grep -A 3 '"prometheus-client"' uv.lock | grep version | head -1 | sed 's/.*"version": "\([^"]*\)".*/\1/') && \
+RUN uv venv
+
+RUN FLASK_VERSION=$(grep -A 3 '"flask"' uv.lock | grep version | head -1 | sed -E 's/.*"([^"]+)".*/\1/') && \
+    GUNICORN_VERSION=$(grep -A 3 '"gunicorn"' uv.lock | grep version | head -1 | sed -E 's/.*"([^"]+)".*/\1/') && \
+    PROMETHEUS_VERSION=$(grep -A 3 '"prometheus-client"' uv.lock | grep version | head -1 | sed -E 's/.*"([^"]+)".*/\1/') && \
     uv pip install --no-cache-dir \
-    flask==${FLASK_VERSION:-2.3.3} \
-    gunicorn==${GUNICORN_VERSION:-21.2.0} \
-    prometheus-client==${PROMETHEUS_VERSION:-0.17.1}
+    flask==${FLASK_VERSION} \
+    gunicorn==${GUNICORN_VERSION} \
+    prometheus-client==${PROMETHEUS_VERSION}
 
 FROM python:3.12-slim
 
@@ -25,10 +26,9 @@ WORKDIR /app
 COPY metrics_serving.py .
 
 # Copy the installed packages from builder
-COPY --from=builder /opt/venv /opt/venv
-RUN mkdir -p /tmp/prometheus_multiproc
-ENV PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus_multiproc
-ENV PATH="/opt/venv/bin:$PATH"
+COPY --from=builder /app/.venv /app/.venv
+
+ENV PATH="/app/.venv/bin:$PATH"
 
 EXPOSE 9090
 
