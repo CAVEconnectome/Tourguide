@@ -18,23 +18,23 @@ cache = Cache(
 
 
 def has_service_key(datastack_name, gclient):
-    return datastack_name
+    return f"has_skeleton_service_{datastack_name}"
 
 
-@cache.cached(key_prefix="has_skeleton_service", make_cache_key=has_service_key)
+@cache.cached(make_cache_key=has_service_key)
 def has_skeleton_service(datastack_name, gclient):
     info = gclient.info.get_datastack_info(datastack_name=datastack_name)
     return info.get("skeleton_source") is not None
 
 
 def mirror_key(datastack_name, gclient):
-    return datastack_name
+    return f"get_image_mirrors_{datastack_name}"
 
 
-@cache.cached(key_prefix="get_image_mirrors", make_cache_key=mirror_key)
+@cache.cached(make_cache_key=mirror_key)
 def get_image_mirrors(datastack_name, gclient):
     try:
-        mirrors = gclient.info.get_image_mirrors(datastack_name=datastack_name)
+        mirrors = gclient.info.get_image_mirror_names(datastack_name=datastack_name)
     except ServerIncompatibilityError:
         mirrors = []
     return mirrors
@@ -51,7 +51,7 @@ def index():
     show_datastacks = sorted(
         [ds for ds in datastacks if has_skeleton_service(ds, gclient)]
     )
-    # mirrors = {ds: gclient.info.get_for ds in datastacks]
+    mirrors = {ds: get_image_mirrors(ds, gclient) for ds in datastacks}
     base_url = f"{request.url_root.rstrip('/')}/{TOURGUIDE_PREFIX.strip('/')}"
     return render_template(
         "index.html",
@@ -59,6 +59,7 @@ def index():
         version=__version__,
         base_url=base_url,
         datastacks=show_datastacks,
+        mirrors=mirrors,
     )
 
 

@@ -270,24 +270,42 @@ def layout(**kwargs):
     )
 
     tag_picker = dmc.Container(
-        dmc.TagsInput(
-            id="annotation-tag-list",
-            label="Set Annotation Tags",
-            description="Choose or add tags (up to 6)",
-            value=[
-                "Seen",
-            ],
-            data=[
-                {"value": "done", "label": "Done"},
-                {"value": "seen", "label": "Seen"},
-                {"value": "correct", "label": "Correct"},
-                {"value": "error", "label": "Error"},
-                {"value": "unsure", "label": "Unsure"},
-            ],
-            clearable=True,
-            maxTags=6,
-            w=200,
-        )
+        [
+            dmc.TagsInput(
+                id="annotation-tag-list",
+                description="Choose or add tags (up to 6)",
+                value=[
+                    "Seen",
+                ],
+                data=[
+                    {"value": "done", "label": "Done"},
+                    {"value": "seen", "label": "Seen"},
+                    {"value": "correct", "label": "Correct"},
+                    {"value": "error", "label": "Error"},
+                    {"value": "unsure", "label": "Unsure"},
+                ],
+                clearable=True,
+                maxTags=6,
+                w=450,
+            ),
+        ],
+    )
+    tag_modal = html.Div(
+        [
+            dmc.Button(
+                "Tag Options",
+                id="set-tags-modal-button",
+                justify="flex-end",
+                size="md",
+            ),
+            dmc.Modal(
+                title="Set Annotation Tags",
+                id="set-tags-modal",
+                children=tag_picker,
+                size=500,
+                centered=True,
+            ),
+        ]
     )
 
     point_links = dmc.Container(
@@ -374,7 +392,7 @@ def layout(**kwargs):
                     id="path-link-card",
                 ),
             ],
-            cols=2,
+            cols=3,
             spacing="sm",
         ),
         mt=10,
@@ -387,11 +405,11 @@ def layout(**kwargs):
                 dmc.GridCol(
                     dmc.Card(
                         [
-                            tag_picker,
+                            tag_modal,
                         ]
                     ),
-                    span=3,
-                    w=400,
+                    span=2,
+                    # w=150,
                 ),
                 dmc.GridCol(
                     dmc.Card(
@@ -427,7 +445,7 @@ def layout(**kwargs):
                             path_links,
                         ]
                     ),
-                    span=4,
+                    span=5,
                 ),
             ],
         )
@@ -469,6 +487,7 @@ def layout(**kwargs):
                 storage_type="session",
             ),
             dcc.Store(id="curr-root-id"),
+            dcc.Store(id="image-mirror", storage_type="memory"),
         ]
     )
     return layout

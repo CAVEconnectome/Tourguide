@@ -11,9 +11,20 @@
             <h4>Available Datastacks:</h4>
             <ul class="list-group">
                 {% for datastack in datastacks %}
-                    <li class="list-group-item">
+                    {% set is_odd = loop.index0 % 2 != 0 %}
+                    {% set bg_class = 'list-group-item-light' if is_odd else '' %}
+                    
+                    <li class="list-group-item {{ bg_class }}">
                         <a href="{{ base_url }}/app/datastack/{{ datastack }}">{{ datastack }}</a>
                     </li>
+                    {% for mirror in mirrors[datastack] %}
+                        <li class="list-group-item ps-2 py-2 small {{ bg_class }}">
+                            <span class="me-2">•</span>
+                            <a href="{{ base_url }}/app/datastack/{{ datastack }}?mirror={{ mirror }}">
+                                Imagery: {{ mirror }}
+                            </a>
+                        </li>
+                    {% endfor %}
                 {% endfor %}
             </ul>
         </div>
