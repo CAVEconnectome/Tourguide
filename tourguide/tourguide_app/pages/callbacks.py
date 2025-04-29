@@ -328,7 +328,10 @@ def register_callbacks(app):
             auth_token=flask.g.get("auth_token"),
         )
         if ctx.triggered_id == "update-id-button":
-            new_root_id = client.chunkedgraph.suggest_latest_roots(int(root_id))
+            new_root_id = lib_utils.suggest_latest_roots_robust(
+                client,
+                int(root_id),
+            )
             if new_root_id == int(root_id):
                 root_id_updated = False
             else:
