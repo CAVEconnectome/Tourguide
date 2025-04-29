@@ -1,6 +1,7 @@
 from typing import Optional
 import flask
 from dash import html, dcc, Input, Output, State, ctx, no_update
+from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
 from ..utils import (
     stash_dataframe,
@@ -49,8 +50,8 @@ RESET_LINK_TRIGGERS = [
     "smooth-paths-checkbox",
     "topo-restriction-select",
     "topo-restriction-input",
-    "annotation-tag-list",
     "curr-root-id",
+    "set-tags-modal",
 ]
 
 SHORT_PATH_LENGTH = 5_000
@@ -74,6 +75,14 @@ def root_id_from_url_query(search_qry):
     root_id = _url_query_dict(search_qry).get("root_id", [None])[0]
     try:
         return root_id
+    except:
+        return None
+
+
+def image_mirror_from_url_query(search_qry):
+    mirror = _url_query_dict(search_qry).get("mirror", [None])[0]
+    try:
+        return mirror
     except:
         return None
 
@@ -106,6 +115,7 @@ def link_process_generic(
     smooth_paths=None,
     smooth_paths_distance=None,
     tags=None,
+    image_mirror=None,
     auth_token=None,
 ):
     # Not having good data should also reset the links
@@ -128,6 +138,7 @@ def link_process_generic(
         datastack_name=datastack_name,
         server_address=os.environ.get("TOURGUIDE_SERVER_ADDRESS"),
         auth_token=auth_token,
+        image_mirror=image_mirror,
     )
     try:
         restriction_point = lib_utils.process_point_string(restriction_point)
@@ -251,12 +262,22 @@ def link_process_generic(
 
 
 def register_callbacks(app):
-    @app.callback(Output("header-bar", "children"), Input("url", "pathname"))
-    def set_header_text(url):
-        return html.H2(
-            f"TourGuide Morphology — {get_datastack(url)}",
-            className="text-center",
-        )
+    @app.callback(
+        Output("header-bar", "children"),
+        Input("url", "pathname"),
+        Input("image-mirror", "data"),
+    )
+    def set_header_text(url, image_mirror):
+        if image_mirror is None:
+            return html.H2(
+                f"TourGuide Morphology — {get_datastack(url)}",
+                className="text-center",
+            )
+        else:
+            return html.H2(
+                f"TourGuide Morphology — {get_datastack(url)} ({image_mirror})",
+                className="text-center",
+            )
 
     @app.callback(
         Output("tourguide-root-id", "value", allow_duplicate=True),
@@ -265,6 +286,18 @@ def register_callbacks(app):
     )
     def set_root_id(search):
         return root_id_from_url_query(search)
+
+    @app.callback(
+        Output("image-mirror", "data"),
+        Input("url", "search"),
+        State("image-mirror", "data"),
+    )
+    def set_image_mirror(search, image_mirror):
+        new_image_mirror = image_mirror_from_url_query(search)
+        if new_image_mirror is not None:
+            return image_mirror_from_url_query(search)
+        else:
+            raise PreventUpdate
 
     # Get offset between browser time and UTC time.
     app.clientside_callback(
@@ -275,6 +308,15 @@ def register_callbacks(app):
         Output("timezone-offset", "data"),
         Input("load-interval", "n_intervals"),
     )
+
+    @app.callback(
+        Output("set-tags-modal", "opened"),
+        Input("set-tags-modal-button", "n_clicks"),
+        State("set-tags-modal-button", "opened"),
+        prevent_initial_call=True,
+    )
+    def toggle_tag_modal(n_clicks, open_state):
+        return not open_state
 
     @app.callback(
         Output("curr-root-id", "data"),
@@ -410,7 +452,9 @@ def register_callbacks(app):
         Input("use-time-restriction", "checked"),
         Input("restriction-datetime", "value"),
         Input("timezone-offset", "data"),
-        Input("annotation-tag-list", "value"),
+        Input("set-tags-modal", "opened"),
+        State("annotation-tag-list", "value"),
+        State("image-mirror", "data"),
         Input("end-point-link-button", "n_clicks"),
         prevent_initial_call=True,
         running=[(Output("end-point-link-button", "loading"), True, False)],
@@ -428,7 +472,9 @@ def register_callbacks(app):
         use_time_restriction,
         restriction_datetime,
         utc_offset,
+        tag_modal_opened,
         tags,
+        image_mirror,
         _,
     ):
         point_name = "End Point"
@@ -439,7 +485,10 @@ def register_callbacks(app):
                 button_id=button_id,
             ),
         )
-
+        # Don't update on modal open
+        if ctx.triggered_id == "set-tags-modal":
+            if tag_modal_opened == True:
+                return no_update
         return link_process_generic(
             point_name,
             button_id,
@@ -458,6 +507,7 @@ def register_callbacks(app):
             use_time_restriction,
             convert_time_string_to_utc(restriction_datetime, utc_offset),
             tags=tags,
+            image_mirror=image_mirror,
             auth_token=flask.g.get("auth_token"),
         )
 
@@ -475,7 +525,8 @@ def register_callbacks(app):
         Input("use-time-restriction", "checked"),
         Input("restriction-datetime", "value"),
         Input("timezone-offset", "data"),
-        Input("annotation-tag-list", "value"),
+        Input("set-tags-modal", "opened"),
+        State("annotation-tag-list", "value"),
         Input("branch-point-link-button", "n_clicks"),
         prevent_initial_call=True,
         running=[(Output("branch-point-link-button", "loading"), True, False)],
@@ -493,6 +544,7 @@ def register_callbacks(app):
         use_time_restriction,
         restriction_datetime,
         utc_offset,
+        tag_modal_opened,
         tags,
         _,
     ):
@@ -504,6 +556,10 @@ def register_callbacks(app):
                 button_id=button_id,
             ),
         )
+        # Don't update on modal open
+        if ctx.triggered_id == "set-tags-modal":
+            if tag_modal_opened == True:
+                return no_update
 
         return link_process_generic(
             point_name,
@@ -540,7 +596,8 @@ def register_callbacks(app):
         Input("use-time-restriction", "checked"),
         Input("restriction-datetime", "value"),
         Input("timezone-offset", "data"),
-        Input("annotation-tag-list", "value"),
+        Input("set-tags-modal", "opened"),
+        State("annotation-tag-list", "value"),
         Input("branch-end-point-link-button", "n_clicks"),
         prevent_initial_call=True,
         running=[(Output("branch-end-point-link-button", "loading"), True, False)],
@@ -558,6 +615,7 @@ def register_callbacks(app):
         use_time_restriction,
         restriction_datetime,
         utc_offset,
+        tag_modal_opened,
         tags,
         _,
     ):
@@ -569,6 +627,11 @@ def register_callbacks(app):
                 button_id=button_id,
             ),
         )
+        # Don't update on modal open
+        if ctx.triggered_id == "set-tags-modal":
+            if tag_modal_opened == True:
+                return no_update
+
         return link_process_generic(
             point_name,
             button_id,
@@ -621,13 +684,17 @@ def register_callbacks(app):
     @app.callback(
         Output("topo-restriction-input", "disabled"),
         Output("topo-restriction-input", "value"),
+        Output("topo-restriction-input", "error"),
         Input("topo-restriction-select", "value"),
         Input("topo-restriction-input", "value"),
     )
     def toggle_topo_restriction_input(select_value, input_value):
+        print("input_value", input_value)
         if select_value == "no-split":
-            return True, ""
-        return False, input_value
+            return True, "", None
+        elif input_value is None or input_value == "":
+            return False, "", "Provide a value or set Restrict to None"
+        return False, input_value, None
 
     @app.callback(
         Output("clear-history-modal", "opened"),
@@ -705,7 +772,8 @@ def register_callbacks(app):
         Input("hide-path", "checked"),
         Input("smooth-paths-checkbox", "checked"),
         Input("smooth-paths-input", "value"),
-        Input("annotation-tag-list", "value"),
+        Input("set-tags-modal", "opened"),
+        State("annotation-tag-list", "value"),
         Input("path-link-button", "n_clicks"),
         prevent_initial_call=True,
         running=[(Output("path-link-button", "loading"), True, False)],
@@ -728,6 +796,7 @@ def register_callbacks(app):
         hide_path,
         smooth_paths,
         smooth_paths_distance,
+        tag_modal_opened,
         tags,
         _,
     ):

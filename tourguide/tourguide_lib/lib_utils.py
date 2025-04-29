@@ -2,7 +2,6 @@ import datetime
 from typing import Optional
 from urllib.parse import urlparse
 
-import flask
 import numpy as np
 from caveclient import CAVEclient
 from caveclient.base import ServerIncompatibilityError
@@ -13,15 +12,19 @@ def make_client(
     datastack_name: str,
     server_address: Optional[str] = None,
     auth_token: Optional[str] = None,
+    image_mirror: Optional[str] = None,
 ):
     "Generate the appropriate CAVEclient with info caching"
     if len(urlparse(server_address).scheme) == 0:
         server_address = f"https://{server_address}"
-    return CachedClient(
+    client = CachedClient(
         datastack_name=datastack_name,
         server_address=server_address,
         auth_token=auth_token,
     )
+    if image_mirror is not None:
+        client.info.get_datastack_info(image_mirror=image_mirror)
+    return client
 
 
 def make_global_client(

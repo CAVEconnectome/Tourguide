@@ -645,12 +645,9 @@ wheels = [
 
 [[package]]
 name = "dash"
-version = "2.18.2"
+version = "3.0.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "dash-core-components" },
-    { name = "dash-html-components" },
-    { name = "dash-table" },
     { name = "flask" },
     { name = "importlib-metadata" },
     { name = "nest-asyncio" },
@@ -661,27 +658,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "werkzeug" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/cf/ae/dfd8c42c83cad1b903e4e3e7be7042074d5d7d16be97eaede6656b8ead95/dash-2.18.2.tar.gz", hash = "sha256:20e8404f73d0fe88ce2eae33c25bbc513cbe52f30d23a401fa5f24dbb44296c8", size = 7457235, upload_time = "2024-11-04T21:13:04.69Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/31/ed/144e12b6297201750eae08aa9372f2212d104269433a11b62ecab0da2446/dash-3.0.2.tar.gz", hash = "sha256:a9e08479d8dcf4f76e87794ee8d79ed4b58423be5f367f609ac8c24bda2f78b0", size = 7599031, upload_time = "2025-04-01T19:43:22.303Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/72/ef/d46131f4817f18b329e4fb7c53ba1d31774239d91266a74bccdc932708cc/dash-2.18.2-py3-none-any.whl", hash = "sha256:0ce0479d1bc958e934630e2de7023b8a4558f23ce1f9f5a4b34b65eb3903a869", size = 7792658, upload_time = "2024-11-04T21:12:56.592Z" },
-]
-
-[[package]]
-name = "dash-core-components"
-version = "2.0.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/41/55/ad4a2cf9b7d4134779bd8d3a7e5b5f8cc757f421809e07c3e73bb374fdd7/dash_core_components-2.0.0.tar.gz", hash = "sha256:c6733874af975e552f95a1398a16c2ee7df14ce43fa60bb3718a3c6e0b63ffee", size = 3427, upload_time = "2021-09-03T17:11:19.342Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/00/9e/a29f726e84e531a36d56cff187e61d8c96d2cc253c5bcef9a7695acb7e6a/dash_core_components-2.0.0-py3-none-any.whl", hash = "sha256:52b8e8cce13b18d0802ee3acbc5e888cb1248a04968f962d63d070400af2e346", size = 3822, upload_time = "2022-03-02T16:50:30.899Z" },
-]
-
-[[package]]
-name = "dash-html-components"
-version = "2.0.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/14/c6/957d5e83b620473eb3c8557a253fb01c6a817b10ca43d3ff9d31796f32a6/dash_html_components-2.0.0.tar.gz", hash = "sha256:8703a601080f02619a6390998e0b3da4a5daabe97a1fd7a9cebc09d015f26e50", size = 3840, upload_time = "2021-09-03T17:15:28.871Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/75/65/1b16b853844ef59b2742a7de74a598f376ac0ab581f0dcc34db294e5c90e/dash_html_components-2.0.0-py3-none-any.whl", hash = "sha256:b42cc903713c9706af03b3f2548bda4be7307a7cf89b7d6eae3da872717d1b63", size = 4092, upload_time = "2022-03-02T16:56:07.734Z" },
+    { url = "https://files.pythonhosted.org/packages/4e/52/a4d1320ab57402d0cbe7e70e3bad72524bb66b86973a0330b372f3ce47b2/dash-3.0.2-py3-none-any.whl", hash = "sha256:fa5b03fe47690eb1785c71402031fd22a8ebb1f4b46d556f36e8d5b0e13a4124", size = 7945386, upload_time = "2025-04-01T19:43:14.74Z" },
 ]
 
 [[package]]
@@ -694,15 +673,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/5d/e3/d9eebd98cec05c9775313eedca336cc4b45f705b488bb37ed9796fd3988b/dash_mantine_components-1.2.0.tar.gz", hash = "sha256:443d019d046be6baffcb165898619b0e2db14247e74e31b4bb69e7a9581dc78f", size = 1112589, upload_time = "2025-04-24T20:32:26.922Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/21/ed/22f3f3451c377be60b992d74499bf583055681bafcd8b61fbe49b4de2816/dash_mantine_components-1.2.0-py3-none-any.whl", hash = "sha256:29cd2dc1175074b79ceb8c2968f0d6f11943f383ab69e767a9e58ce2f3fbe70b", size = 1509611, upload_time = "2025-04-24T20:32:24.567Z" },
-]
-
-[[package]]
-name = "dash-table"
-version = "5.0.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/3a/81/34983fa0c67125d7fff9d55e5d1a065127bde7ca49ca32d04dedd55f9f35/dash_table-5.0.0.tar.gz", hash = "sha256:18624d693d4c8ef2ddec99a6f167593437a7ea0bf153aa20f318c170c5bc7308", size = 3391, upload_time = "2021-09-03T17:22:17.114Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/da/ce/43f77dc8e7bbad02a9f88d07bf794eaf68359df756a28bb9f2f78e255bb1/dash_table-5.0.0-py3-none-any.whl", hash = "sha256:19036fa352bb1c11baf38068ec62d172f0515f73ca3276c79dee49b95ddc16c9", size = 3912, upload_time = "2022-03-02T17:10:41.401Z" },
 ]
 
 [[package]]
@@ -3288,7 +3258,7 @@ requires-dist = [
     { name = "caveclient", specifier = ">=7.7.3" },
     { name = "cloud-volume", specifier = ">=11.1.3" },
     { name = "cryptography", specifier = ">=44.0.0" },
-    { name = "dash", specifier = ">=2.18.2,<3.0.0" },
+    { name = "dash", specifier = ">=3.0.0,<3.0.3" },
     { name = "dash-mantine-components", specifier = ">=1.2.0" },
     { name = "flask", specifier = ">=3.0.0" },
     { name = "flask-caching", specifier = ">=2.3.1" },

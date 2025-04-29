@@ -12,7 +12,7 @@ description = "Generate states based on neuron topology"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "dash>=2.18.2,<3.0.0",
+    "dash>=3.0.0,<3.0.3",
     "cachetools>=5.5.0",
     "caveclient>=7.7.3",
     "cloud-volume>=11.1.3",
