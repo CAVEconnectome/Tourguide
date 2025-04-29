@@ -527,6 +527,7 @@ def register_callbacks(app):
         Input("timezone-offset", "data"),
         Input("set-tags-modal", "opened"),
         State("annotation-tag-list", "value"),
+        State("image-mirror", "data"),
         Input("branch-point-link-button", "n_clicks"),
         prevent_initial_call=True,
         running=[(Output("branch-point-link-button", "loading"), True, False)],
@@ -546,6 +547,7 @@ def register_callbacks(app):
         utc_offset,
         tag_modal_opened,
         tags,
+        image_mirror,
         _,
     ):
         point_name = "Branch Point"
@@ -579,6 +581,7 @@ def register_callbacks(app):
             use_time_restriction,
             convert_time_string_to_utc(restriction_datetime, utc_offset),
             tags=tags,
+            image_mirror=image_mirror,
             auth_token=flask.g.get("auth_token"),
         )
 
@@ -598,6 +601,7 @@ def register_callbacks(app):
         Input("timezone-offset", "data"),
         Input("set-tags-modal", "opened"),
         State("annotation-tag-list", "value"),
+        State("image-mirror", "data"),
         Input("branch-end-point-link-button", "n_clicks"),
         prevent_initial_call=True,
         running=[(Output("branch-end-point-link-button", "loading"), True, False)],
@@ -617,6 +621,7 @@ def register_callbacks(app):
         utc_offset,
         tag_modal_opened,
         tags,
+        image_mirror,
         _,
     ):
         point_name = "Branch and End Point"
@@ -650,6 +655,7 @@ def register_callbacks(app):
             use_time_restriction,
             convert_time_string_to_utc(restriction_datetime, utc_offset),
             tags=tags,
+            image_mirror=image_mirror,
             auth_token=flask.g.get("auth_token"),
         )
 
@@ -774,6 +780,7 @@ def register_callbacks(app):
         Input("smooth-paths-input", "value"),
         Input("set-tags-modal", "opened"),
         State("annotation-tag-list", "value"),
+        State("image-mirror", "data"),
         Input("path-link-button", "n_clicks"),
         prevent_initial_call=True,
         running=[(Output("path-link-button", "loading"), True, False)],
@@ -798,6 +805,7 @@ def register_callbacks(app):
         smooth_paths_distance,
         tag_modal_opened,
         tags,
+        image_mirror,
         _,
     ):
         point_name = "Path"
@@ -808,6 +816,10 @@ def register_callbacks(app):
                 button_id=button_id,
             ),
         )
+        # Don't update on modal open
+        if ctx.triggered_id == "set-tags-modal":
+            if tag_modal_opened == True:
+                return no_update
 
         logger.debug(f"Path triggered by: {ctx.triggered_id}")
         return link_process_generic(
@@ -836,6 +848,7 @@ def register_callbacks(app):
             smooth_paths=smooth_paths,
             smooth_paths_distance=smooth_paths_distance,
             tags=tags,
+            image_mirror=image_mirror,
             auth_token=flask.g.get("auth_token"),
         )
 
