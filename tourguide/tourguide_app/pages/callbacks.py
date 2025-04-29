@@ -295,7 +295,7 @@ def register_callbacks(app):
     def set_image_mirror(search, image_mirror):
         new_image_mirror = image_mirror_from_url_query(search)
         if new_image_mirror is not None:
-            return image_mirror_from_url_query(search)
+            return new_image_mirror
         else:
             raise PreventUpdate
 
