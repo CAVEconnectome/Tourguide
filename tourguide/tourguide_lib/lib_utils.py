@@ -61,7 +61,8 @@ def suggest_latest_roots_robust(client, root_id, timestamp=None):
 
     delta_layers = 4
     stop_layer = (
-        client.segmentation_info.get("graph", {}).get("n_layers", 6) - delta_layers
+        client.chunkedgraph.segmentation_info.get("graph", {}).get("n_layers", 6)
+        - delta_layers
     )
     stop_layer = max(1, stop_layer)
 
