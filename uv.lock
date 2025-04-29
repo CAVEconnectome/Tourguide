@@ -3207,7 +3207,7 @@ wheels = [
 
 [[package]]
 name = "tourguide"
-version = "2.2.10"
+version = "2.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "cachetools" },
