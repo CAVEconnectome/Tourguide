@@ -423,7 +423,7 @@ wheels = [
 
 [[package]]
 name = "cloud-volume"
-version = "12.2.0"
+version = "12.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "boto3" },
@@ -456,9 +456,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "urllib3", extra = ["brotli"] },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7a/44/446e5bca05fc3d03a938193a1b3e9f4ad02d370dc8707c8f183648c36ac7/cloud_volume-12.2.0.tar.gz", hash = "sha256:9f4ef5a11b6e4e48d67a983984c016041ca50b305e3017b2c603d354ac1444c5", size = 243582, upload-time = "2025-04-16T19:21:27.319Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/15/8a/f61fc57dadedb38aeae5e40e3c180a82750aaa97c9902812e3003a3dc306/cloud_volume-12.3.1.tar.gz", hash = "sha256:a94c4010226989a4100868e6b9e74922c094303102e640b44b7b1204a94528dd", size = 254471, upload-time = "2025-06-04T23:45:06.105Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bb/b6/d173bc80fef178cb1096d146410731eaacacd42dd35f06418e657517b329/cloud_volume-12.2.0-py3-none-any.whl", hash = "sha256:d59c8c2082a8620555ec5ecb9d9d7fcdb4063d875b924a8784d655cfcfb5f0a4", size = 203292, upload-time = "2025-04-16T19:21:25.289Z" },
+    { url = "https://files.pythonhosted.org/packages/64/9f/ab398aaeccf828bdec0eff7561e4e9523032b71cfc8ce3a966edac465ae4/cloud_volume-12.3.1-py3-none-any.whl", hash = "sha256:ccd8ab38d7c7c10521b62ff3e90e79641a00a599846aff75c6e0d7e17562719f", size = 222066, upload-time = "2025-06-04T23:45:03.925Z" },
 ]
 
 [[package]]
@@ -1841,7 +1841,7 @@ wheels = [
 
 [[package]]
 name = "nglui"
-version = "4.1.0"
+version = "4.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "attrs" },
@@ -1857,9 +1857,9 @@ dependencies = [
     { name = "six" },
     { name = "webcolors" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b9/f5/f43d13f08b431a4a34ed330ccd7af689e3921de34da4713503ed6a72a350/nglui-4.1.0.tar.gz", hash = "sha256:7cf5d035816d5354dc14c3ac31bb1073a62952eab99bf8563fc406d3156bd986", size = 1138949, upload-time = "2025-06-25T05:47:33.386Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3c/7e/411accd7aa5918fa0a9f8f7fc7fc2ccdc0adecadf6e1c9711ebb2543a5c9/nglui-4.3.1.tar.gz", hash = "sha256:3720cce74047a8bcc86206afb45450b06e91f315f0fcee0f565a34e65b34c548", size = 1139893, upload-time = "2025-06-26T05:34:09.813Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f1/5e/038b867b3bf0dbd6acc9970b771328cc6f104392e31aaaaeb00ab780791f/nglui-4.1.0-py3-none-any.whl", hash = "sha256:781a0212a06126f3cef3842ca38785ee4290b45cd06d030de1defc87768c50f3", size = 51330, upload-time = "2025-06-25T05:47:31.99Z" },
+    { url = "https://files.pythonhosted.org/packages/0d/cc/bee9ae81dd137cbaaf98e15e2349c91fe162789d4ecad3dc10e5675a195b/nglui-4.3.1-py3-none-any.whl", hash = "sha256:88a69e5d0e3ecd11399df0ed1ee5b1adcdbd46e9a036517e7c9ffa62bdd5b191", size = 52187, upload-time = "2025-06-26T05:34:08.394Z" },
 ]
 
 [[package]]
@@ -3277,7 +3277,7 @@ requires-dist = [
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "meshparty", specifier = ">=2.0.1" },
     { name = "middle-auth-client", specifier = ">=3.18.1" },
-    { name = "nglui", specifier = ">=4.1.0" },
+    { name = "nglui", specifier = ">=4.3.1" },
     { name = "numpy", specifier = ">=2.2.3" },
     { name = "orjson", specifier = ">=3.10.14" },
     { name = "pandas", specifier = ">=2.2.3" },

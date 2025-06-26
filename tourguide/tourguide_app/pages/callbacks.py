@@ -689,7 +689,6 @@ def register_callbacks(app):
         Input("topo-restriction-input", "value"),
     )
     def toggle_topo_restriction_input(select_value, input_value):
-        print("input_value", input_value)
         if select_value == "no-split":
             return True, "", None
         elif input_value is None or input_value == "":

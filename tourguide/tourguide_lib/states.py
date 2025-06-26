@@ -24,7 +24,7 @@ LAYER_COLORS = {
 RESTRICTED_SEGMENTATION_LAYER = "restricted-segmentation"
 COVER_PATH_LAYER = "cover-path"
 DEFAULT_NEUROGLANCER_URL = os.environ.get(
-    "DEFAULT_NEUROGLANCER_URL", "https://spelunker.cave-explorer.org"
+    "TOURGUIDE_NEUROGLANCER_URL", "https://spelunker.cave-explorer.org"
 )
 
 POINT_SORT_ORDER = [
@@ -38,12 +38,10 @@ def set_default_ngl_configuration(
     datastack_name: str,
     target_url: Optional[str] = None,
 ) -> None:
-    print("Setting default Neuroglancer configuration for", datastack_name)
     add_neuroglancer_site(
         site_name=datastack_name,
         site_url=target_url or DEFAULT_NEUROGLANCER_URL,
     )
-    print(get_neuroglancer_sites())
 
 
 def config_ngl(client: CAVEclient, target_url: Optional[str] = None) -> None:
@@ -217,6 +215,7 @@ def make_path_link(
             point_b_column="pointB",
             data_resolution=[1, 1, 1],
             tags=tags,
+            swap_visible_segments_on_move=False,
         )
         viewer_state.layers[-1].color = color
 
@@ -235,7 +234,6 @@ def make_path_link(
             name=RESTRICTED_SEGMENTATION_LAYER,
             selected_alpha=0,
             alpha_3d=0.3,
-            selectable=False,
             pick=False,
         )
     return viewer_state.to_link_shortener(
