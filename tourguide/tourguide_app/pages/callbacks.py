@@ -182,9 +182,9 @@ def link_process_generic(
             )
         else:
             url = url_function(
-                int(root_id),
-                vertex_df,
-                client,
+                root_id=int(root_id),
+                vertex_df=vertex_df,
+                client=client,
                 tags=tags,
             )
             logger.debug(f"Generating button with url: {url}")
@@ -226,12 +226,6 @@ def link_process_generic(
             logger.debug(f"\tpath df: {len(path_df)}. lvl2_ids: {len(lvl2_ids)}")
         else:
             logger.debug(f"\tpath df: {len(path_df)}, lvl2_ids: None")
-        sb_data = states.package_path_data(
-            path_df,
-            lvl2_ids,
-            mesh_only=hide_path,
-            client=client,
-        )
 
         logger.debug(f"\tMade sb_data: {{k: len(v) for k, v in sb_data.items()}}")
         if len(vertex_df) == 0:
@@ -242,17 +236,17 @@ def link_process_generic(
             )
         else:
             logger.debug(f"Making statebuilder for paths")
-            sb = states.make_path_statebuilder(
-                color="white",
-                use_skeleton_service=True,
-                split_positions=True,
+            # This is `make_path_link` in states and parameters need to be formatted accordingly
+            url = url_function(
                 client=client,
-                root_ids=[int(root_id)],
+                root_id=int(root_id),
+                path_df=path_df,
+                lvl2_ids=lvl2_ids,
+                mesh_only=hide_path,
                 add_restricted_segmentation_layer=show_mesh_subset,
                 restricted_color="white",
                 tags=tags,
             )
-            url = url_function(sb_data, sb, client)
             logger.debug(f"Generating button with url: {url}")
             return link_maker_button(
                 f"{point_name} Link",
