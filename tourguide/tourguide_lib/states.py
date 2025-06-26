@@ -94,6 +94,7 @@ def _add_end_points(
         tags=tags,
         data_resolution=[1, 1, 1],
         color=LAYER_COLORS.get("end_points", "DarkTurquoise"),
+        swap_visible_segments_on_move=False,
     )
 
 
@@ -103,13 +104,14 @@ def _add_branch_points(
     tags: list[str],
 ) -> ViewerState:
     viewer_state.add_points(
-        data=vertex_df.query(processing.END_POINT_COLUMN).sort_values(
+        data=vertex_df.query(processing.BRANCH_POINT_COLUMN).sort_values(
             by=POINT_SORT_ORDER
         ),
         name="branch_points",
         point_column=processing.VERTEX_POINT,
         tags=tags,
         data_resolution=[1, 1, 1],
+        swap_visible_segments_on_move=False,
     )
     viewer_state.layers[-1].color = LAYER_COLORS.get("branch_points", "OrangeRed")
     return viewer_state
